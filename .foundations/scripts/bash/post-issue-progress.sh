@@ -7,8 +7,8 @@
 # Arguments:
 #   issue_number  GitHub issue number (required)
 #   phase_name    Human-readable phase name, e.g. "Environment Validation" (required)
-#   status        One of: started, complete, failed (required)
-#   summary       Brief one-line summary of outcome (optional for started, recommended for complete/failed)
+#   status        One of: started, in-progress, complete, failed (required)
+#   summary       Brief one-line summary of outcome (optional for started/in-progress, recommended for complete/failed)
 #   details       Multi-line details/bullets to append as **Summary** block (optional)
 #
 # Examples:
@@ -22,7 +22,7 @@ set -euo pipefail
 
 if [[ $# -lt 3 ]]; then
   echo "Usage: post-issue-progress.sh <issue_number> <phase_name> <status> [summary]" >&2
-  echo "  status: started | complete | failed" >&2
+  echo "  status: started | in-progress | complete | failed" >&2
   exit 1
 fi
 
@@ -34,16 +34,16 @@ DETAILS="${5:-}"
 
 # Validate status
 case "$STATUS" in
-  started|complete|failed) ;;
+  started|in-progress|complete|failed) ;;
   *)
-    echo "Error: status must be one of: started, complete, failed (got: $STATUS)" >&2
+    echo "Error: status must be one of: started, in-progress, complete, failed (got: $STATUS)" >&2
     exit 1
     ;;
 esac
 
 # Build comment body
 case "$STATUS" in
-  started)
+  started|in-progress)
     ICON="🔄"
     STATUS_LABEL="In Progress"
     BODY="## ${ICON} Phase: ${PHASE_NAME}
@@ -81,12 +81,6 @@ if [[ -n "$DETAILS" ]]; then
 
 **Summary**:
 ${DETAILS}"
-fi
-
-# Detect GHE hostname from git remote
-GH_HOST_DETECTED=$(git remote get-url origin 2>/dev/null | sed -n 's|.*://\([^/]*\)/.*|\1|p' | grep -v 'github\.com' || true)
-if [ -n "$GH_HOST_DETECTED" ]; then
-  export GH_HOST="$GH_HOST_DETECTED"
 fi
 
 # Post to GitHub issue
