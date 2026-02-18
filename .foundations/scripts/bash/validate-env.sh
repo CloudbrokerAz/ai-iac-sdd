@@ -44,7 +44,7 @@ Each check has a severity:
 
 GATE CHECKS:
   TFE_TOKEN          Terraform Cloud/Enterprise API token
-  GITHUB_TOKEN       GitHub Personal Access Token
+  GITHUB_TOKEN       GitHub Personal Access Token (github.com)
   GH_CLI             GitHub CLI installed and authenticated
                      (Required: issue creation is mandatory audit trail)
   TERRAFORM          Terraform CLI installed (>= 1.5)
@@ -106,60 +106,35 @@ else
     add_check "TFE_TOKEN" "GATE" "true" "SET"
 fi
 
-# GATE: GITHUB_TOKEN or GH_ENTERPRISE_TOKEN
+# GATE: GITHUB_TOKEN
 if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    add_check "GITHUB_TOKEN" "GATE" "true" "SET (GITHUB_TOKEN)"
-elif [[ -n "${GH_ENTERPRISE_TOKEN:-}" ]]; then
-    add_check "GITHUB_TOKEN" "GATE" "true" "SET (GH_ENTERPRISE_TOKEN)"
+    add_check "GITHUB_TOKEN" "GATE" "true" "SET"
 else
-    add_check "GITHUB_TOKEN" "GATE" "false" "NOT SET — export GITHUB_TOKEN or GH_ENTERPRISE_TOKEN"
+    add_check "GITHUB_TOKEN" "GATE" "false" "NOT SET — export GITHUB_TOKEN"
 fi
 
 # GATE: GH_CLI (required for issue creation — audit trail)
-#
-# gh CLI native env var auth (no gh auth login needed):
-#   GITHUB_TOKEN / GH_TOKEN            → github.com and *.ghe.com (cloud)
-#   GH_ENTERPRISE_TOKEN                → GitHub Enterprise Server (self-hosted)
-#   GH_HOST                            → default hostname when not inferred from repo
-#
-# See: https://cli.github.com/manual/gh_help_environment
 if ! command -v gh &> /dev/null; then
     add_check "GH_CLI" "GATE" "false" "NOT INSTALLED — see: https://cli.github.com"
+elif gh auth status --hostname github.com &> /dev/null; then
+    add_check "GH_CLI" "GATE" "true" "AUTHENTICATED (github.com)"
+elif [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    add_check "GH_CLI" "GATE" "true" "AUTHENTICATED via GITHUB_TOKEN (github.com)"
 else
-    # Derive hostname from git remote (falls back to github.com)
-    GH_TARGET="github.com"
-    if git rev-parse --is-inside-work-tree &> /dev/null; then
-        REMOTE_URL=$(git remote get-url origin 2>/dev/null || true)
-        if [[ "$REMOTE_URL" =~ ^git@([^:]+): ]]; then
-            GH_TARGET="${BASH_REMATCH[1]}"
-        elif [[ "$REMOTE_URL" =~ ^https?://([^/]+)/ ]]; then
-            GH_TARGET="${BASH_REMATCH[1]}"
-        fi
-    fi
-
-    IS_GHE_SERVER=false
-    [[ "$GH_TARGET" != "github.com" && ! "$GH_TARGET" =~ \.ghe\.com$ ]] && IS_GHE_SERVER=true
-
-    if gh auth status --hostname "$GH_TARGET" &> /dev/null; then
-        add_check "GH_CLI" "GATE" "true" "AUTHENTICATED ($GH_TARGET)"
-    elif $IS_GHE_SERVER && [[ -n "${GH_ENTERPRISE_TOKEN:-}" ]]; then
-        add_check "GH_CLI" "GATE" "true" "AUTHENTICATED via GH_ENTERPRISE_TOKEN ($GH_TARGET)"
-    elif ! $IS_GHE_SERVER && [[ -n "${GITHUB_TOKEN:-}${GH_TOKEN:-}" ]]; then
-        add_check "GH_CLI" "GATE" "true" "AUTHENTICATED via GITHUB_TOKEN ($GH_TARGET)"
-    else
-        if $IS_GHE_SERVER; then
-            add_check "GH_CLI" "GATE" "false" "NOT AUTHENTICATED for $GH_TARGET — export GH_ENTERPRISE_TOKEN"
-        else
-            add_check "GH_CLI" "GATE" "false" "NOT AUTHENTICATED — export GITHUB_TOKEN"
-        fi
-    fi
+    add_check "GH_CLI" "GATE" "false" "NOT AUTHENTICATED — export GITHUB_TOKEN"
 fi
 
 # GATE: Terraform CLI (>= 1.5)
 if ! command -v terraform &> /dev/null; then
     add_check "TERRAFORM" "GATE" "false" "NOT INSTALLED — see: https://developer.hashicorp.com/terraform/install"
 else
-    TF_VERSION=$(terraform version -json 2>/dev/null | grep -o '"terraform_version":"[^"]*"' | cut -d'"' -f4 || terraform version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
+    # Parse version from JSON first (space-tolerant), fallback to text output.
+    # NOTE: avoid `head -1` in pipelines — with pipefail, SIGPIPE causes false
+    # failures and the || fallback concatenates stdout from multiple commands.
+    TF_VERSION=$(terraform version -json 2>/dev/null | grep -oE '"terraform_version"\s*:\s*"[^"]+"' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || true)
+    if [[ -z "$TF_VERSION" ]]; then
+        TF_VERSION=$(terraform version 2>/dev/null | grep -oE -m1 '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
+    fi
     TF_MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
     TF_MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
     if [[ "$TF_MAJOR" -gt 1 ]] || { [[ "$TF_MAJOR" -eq 1 ]] && [[ "$TF_MINOR" -ge 5 ]]; }; then
