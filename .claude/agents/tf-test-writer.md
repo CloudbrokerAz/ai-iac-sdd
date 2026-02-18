@@ -15,7 +15,7 @@ tools:
 
 # tf-test-writer
 
-Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files. In v2's TDD workflow, tests are written BEFORE module code. The generated tests will initially fail (red), then pass as implementation progresses (green).
+Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files. Tests are written BEFORE module code. The generated tests will initially fail, then pass as implementation progresses.
 
 ## Instructions
 
@@ -26,7 +26,7 @@ Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files. In v
    - "Validation Errors" / invalid input scenarios / rejection scenarios --> `tests/validation.tftest.hcl`
 3. **Generate Tests**: For each scenario:
    - Create a `run` block named after the scenario (snake_case, e.g., `run "test_default_encryption" {}`)
-   - Set `command = plan` (all v2 tests are plan-only by default)
+   - Set `command = plan` (all tests are plan-only by default)
    - Populate `variables {}` block from the scenario inputs listed in design.md
    - For each assertion in the scenario, create an `assert {}` block with `condition` and `error_message`
    - For validation scenarios, use `expect_failures = [var.name]` instead of assert blocks -- one `run` block per invalid input case

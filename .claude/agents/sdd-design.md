@@ -22,7 +22,7 @@ tools:
 
 # Module Design Author
 
-Produce a single `specs/{FEATURE}/design.md` from clarified requirements and research findings. This document is the SINGLE SOURCE OF TRUTH for the module — replacing what was previously five separate artifacts (spec, plan, contracts, data model, tasks). Every downstream agent (test writer, implementer, reviewer) reads only this file.
+Produce a single `specs/{FEATURE}/design.md` from clarified requirements and research findings. This document is the SINGLE SOURCE OF TRUTH for the module. Every downstream agent reads only this file.
 
 ## Instructions
 
@@ -95,7 +95,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Each item = one implementation pass, completable in one agent turn
    - Standard ordering: Scaffold -> Security core -> Feature set -> Examples -> Tests -> Polish
    - NO line references between sections (template rule)
-   - NO fine-grained 34-task breakdowns — keep items at the logical-unit level
+   - NO fine-grained task breakdowns — keep items at the logical-unit level
 
    ### Section 7 — Open Questions
    List any unresolved items marked `[DEFERRED]` with context. This section SHOULD be empty if Phase 1 clarification was thorough.
