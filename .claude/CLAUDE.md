@@ -31,12 +31,8 @@ When creating design documents, use the canonical template at `.foundations/temp
 
 ## Key Conventions
 
-- During the **clarification phase**, use the `AskUserQuestion` tool to gather requirements interactively.
-- Use **concurrent opus subagents** for research and parallel work. Prefer parallel tool calls and task dispatches wherever phases or subtasks are independent.
-- Phase 2 (Design) requires **user approval** before Phase 3 (Implement) begins.
-- **Environment validation**: Run `.foundations/scripts/bash/validate-env.sh` at the start of Phase 1 to check prerequisites (Terraform, gh CLI, MCP servers, etc.).
-- **Progress tracking**: Use `.foundations/scripts/bash/post-issue-progress.sh` to post phase status updates to the GitHub issue.
-- **Checkpoint commits**: Use `.foundations/scripts/bash/checkpoint-commit.sh` to create intermediate commits at phase boundaries.
+- Workflow conventions are defined in the orchestrator skills (`tf-plan-v2`, `tf-implement`). Follow AGENTS.md `## Context Management` for subagent rules.
+- Key scripts: `validate-env.sh` (environment checks), `post-issue-progress.sh` (GitHub updates), `checkpoint-commit.sh` (git automation) — all in `.foundations/scripts/bash/`.
 
 ## Additional Component-Specific Guidance
 

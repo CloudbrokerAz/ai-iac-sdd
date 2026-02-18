@@ -548,6 +548,160 @@
         "documentation_files": 3,
         "bonus_fix": "tf-security-baselines skill (referenced by aws-security-advisor but missing)"
       }
+    },
+    {
+      "timestamp": "2026-02-18T11:00",
+      "action": "POST-COMPLETION AUDIT — analyzed v1 gaps and v2 context duplication",
+      "audit_type": "missing_files_and_duplication_analysis",
+      "findings": {
+        "missing_from_v1": {
+          "CRITICAL": [
+            {
+              "file": ".pre-commit-config.yaml",
+              "why": "v2 references pre-commit in AGENTS.md prerequisites, constitution Section 2.1/6.3, and validate-env.sh runs 'pre-commit install'. Without the config file, pre-commit installs zero hooks — all commit-time quality gates (fmt, validate, tflint, trivy, secret detection) are silently bypassed.",
+              "v1_hooks": ["terraform_fmt", "terraform_validate", "terraform_docs", "terraform_tflint", "terraform_trivy", "end-of-file-fixer", "check-yaml", "check-added-large-files (500KB)", "check-merge-conflict", "detect-private-key", "vault-radar-scan (conditional on VAULT_RADAR_LICENSE)"],
+              "action": "ADD — port from v1, update hook versions, remove vault-radar if not applicable"
+            },
+            {
+              "file": ".tflint.hcl",
+              "why": "v2 validate-env.sh runs 'tflint --init' and pre-commit references tflint. Without config, tflint runs with zero rules — naming conventions, documentation requirements, module structure checks, AWS tag enforcement all silently skipped.",
+              "v1_rules": ["terraform_naming_convention (snake_case)", "terraform_documented_variables", "terraform_documented_outputs", "terraform_deprecated_index", "terraform_deprecated_interpolation", "terraform_typed_variables", "terraform_standard_module_structure", "terraform_required_version", "terraform_required_providers", "aws_resource_missing_tags (Environment, Application, ManagedBy)", "AWS plugin v0.44.0"],
+              "action": "ADD — port from v1, update plugin versions"
+            }
+          ],
+          "IMPORTANT": [
+            {
+              "file": ".github/workflows/ (4 files: validate.yml, test.yml, release.yml, docs.yml)",
+              "why": "Constitution Section 5.2 implies CI/CD for publishing, Section 3.1 requires PR review. Without workflows: no automated PR validation, no release automation, no terraform-docs freshness check.",
+              "action": "ADD — port from v1, adjust for v2 directory structure"
+            }
+          ],
+          "NICE_TO_HAVE": [".github/dependabot.yml (only for devcontainers)", "getting-started.md (human onboarding guide)", ".foundations/memory/constitution_template.md (generic scaffold)"],
+          "NOT_NEEDED": [".github/prompts/ (GitHub Copilot wrappers — v2 uses Claude Code)", ".github/agents/ (GitHub Copilot agents — v2 has .claude/agents/)", ".foundations/design_resources/ (historical research docs absorbed into v2)"]
+        },
+        "context_duplication": {
+          "total_lines_across_5_files": 1665,
+          "estimated_removable_lines": 194,
+          "reduction_percentage": "~12%",
+          "duplication_instances": 12,
+          "key_duplications": [
+            {
+              "id": "A1",
+              "content": "Context management rules (5 rules)",
+              "found_in": ["AGENTS.md lines 149-153", "tf-plan-v2 SKILL.md lines 31-37", "tf-implement SKILL.md lines 12-16"],
+              "canonical_owner": "AGENTS.md ## Context Management",
+              "removable_lines": 15
+            },
+            {
+              "id": "A2",
+              "content": "4-phase workflow overview (ASCII diagram + descriptions)",
+              "found_in": ["AGENTS.md lines 15-34", "tf-plan-v2 SKILL.md lines 411-420", "constitution.md lines 636-675"],
+              "canonical_owner": "tf-plan-v2 SKILL.md (operational definition)",
+              "removable_lines": 50
+            },
+            {
+              "id": "A3",
+              "content": "post-issue-progress.sh usage (11 occurrences)",
+              "found_in": ["tf-plan-v2 SKILL.md (9 occurrences)", "tf-implement SKILL.md (4 occurrences)", "CLAUDE.md (1)"],
+              "canonical_owner": "tf-plan-v2 SKILL.md (show template ONCE at top)",
+              "removable_lines": 40,
+              "fix": "Show call signature once. Each step just says 'Post progress: Phase N started/complete'"
+            },
+            {
+              "id": "A4",
+              "content": "validate-env.sh instruction",
+              "found_in": ["CLAUDE.md line 37", "tf-plan-v2 lines 47-53", "tf-implement lines 52-54", "constitution lines 541-545"],
+              "canonical_owner": "constitution.md (rule) + tf-plan-v2 Step 1.1 (command)",
+              "removable_lines": 10
+            },
+            {
+              "id": "A6",
+              "content": "Testing strategy / TDD rules",
+              "found_in": ["AGENTS.md lines 111-127", "constitution.md lines 386-407"],
+              "canonical_owner": "constitution.md Section 6.3",
+              "removable_lines": 17
+            },
+            {
+              "id": "A7",
+              "content": "Quality gates between phases",
+              "found_in": ["tf-plan-v2 SKILL.md (3 locations)", "constitution.md Section 11.3"],
+              "canonical_owner": "constitution.md Section 11.3",
+              "removable_lines": 8
+            },
+            {
+              "id": "A8",
+              "content": "Directory map / file organization",
+              "found_in": ["AGENTS.md lines 44-58", "constitution.md lines 88-123"],
+              "canonical_owner": "constitution.md Section 3.2",
+              "removable_lines": 15
+            }
+          ],
+          "file_level_reductions": {
+            "CLAUDE.md": {"current": 52, "target": 47, "save": 5},
+            "AGENTS.md": {"current": 156, "target": 99, "save": 57},
+            "tf-plan-v2_SKILL.md": {"current": 434, "target": 371, "save": 63},
+            "tf-implement_SKILL.md": {"current": 245, "target": 214, "save": 31},
+            "constitution.md": {"current": 778, "target": 740, "save": 38}
+          },
+          "ownership_model": {
+            "context_management_rules": "AGENTS.md",
+            "workflow_operations": "tf-plan-v2 SKILL.md",
+            "governance_and_quality_gates": "constitution.md",
+            "testing_rules": "constitution.md Section 6.3",
+            "testing_operations": "tf-implement SKILL.md",
+            "file_organization": "constitution.md Section 3.2",
+            "agent_inventory": "AGENTS.md",
+            "prerequisites": "constitution.md Section 2",
+            "script_patterns": "tf-plan-v2 (shown once, referenced elsewhere)"
+          },
+          "meta_observation": "The repo violates its own Context Management rule #5 (minimal arguments, never inject file contents). The files themselves inject identical content into multiple locations rather than defining once and referencing. This is the textual equivalent of 'reading file contents into the orchestrator' — it bloats the context window for every agent that loads these files."
+        }
+      },
+      "next_actions": "ALL COMPLETED — see session log entry below"
+    },
+    {
+      "timestamp": "2026-02-18T11:55",
+      "action": "ALL AUDIT FIXES COMPLETE — 8 parallel OPUS agents via team v2-audit-fixes",
+      "completed_tasks": {
+        "missing_files_added": [
+          "T26: .pre-commit-config.yaml — 11 hooks (5 terraform, 5 pre-commit, 1 vault-radar conditional). Added .foundations to trivy skip-dirs.",
+          "T27: .tflint.hcl — 10 rules + AWS plugin v0.44.0. Removed feature-specific comments.",
+          "T28: .github/workflows/ — 4 files (validate.yml, test.yml, release.yml, docs.yml). Same v1 structure, v2 paths."
+        ],
+        "deduplication_completed": [
+          "T29: AGENTS.md — 156 → 101 lines (35% reduction). Removed workflow overview, MCP tools, directory map, prerequisites, testing strategy.",
+          "T30: tf-plan-v2 SKILL.md — 434 → 370 lines (15% reduction). Removed context mgmt rules, 9 bash blocks, phase summary, verbose Glob blocks.",
+          "T31: tf-implement SKILL.md — 245 → 209 lines (15% reduction). Removed context mgmt rules, output table, progress template.",
+          "T32: constitution.md — 778 → 736 lines (5% reduction). Slimmed Section 11.1 and 8.1.",
+          "T33: CLAUDE.md — 52 → 47 lines (10% reduction). Replaced 6 convention bullets with 2 concise lines."
+        ]
+      },
+      "results": {
+        "files_added": 7,
+        "files_modified": 5,
+        "total_lines_before_dedup": 1665,
+        "total_lines_after_dedup": 1463,
+        "lines_removed": 202,
+        "reduction_percentage": "12.1%",
+        "agents_used": 8,
+        "all_parallel": true,
+        "model": "opus"
+      },
+      "new_files_created": [
+        ".pre-commit-config.yaml",
+        ".tflint.hcl",
+        ".github/workflows/validate.yml",
+        ".github/workflows/test.yml",
+        ".github/workflows/release.yml",
+        ".github/workflows/docs.yml"
+      ],
+      "files_deduplicated": [
+        "AGENTS.md (156 → 101)",
+        ".claude/CLAUDE.md (52 → 47)",
+        ".claude/skills/tf-plan-v2/SKILL.md (434 → 370)",
+        ".claude/skills/tf-implement/SKILL.md (245 → 209)",
+        ".foundations/memory/constitution.md (778 → 736)"
+      ]
     }
   ]
 }

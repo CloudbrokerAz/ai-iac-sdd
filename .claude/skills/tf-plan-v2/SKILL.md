@@ -28,13 +28,7 @@ bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Research" "
 
 ## Context Management (CRITICAL)
 
-These rules are NON-NEGOTIABLE. Violating them causes context bloat, compaction failures, and broken workflows.
-
-1. **NEVER call TaskOutput** to read subagent results. All agents write artifacts to disk -- reading them back into the orchestrator bloats context and triggers compaction.
-2. **Verify file existence with Glob** after each agent completes -- do NOT read file contents into the orchestrator.
-3. **Downstream agents read their own inputs from disk.** The orchestrator passes only the FEATURE path and a brief scope description via `$ARGUMENTS`.
-4. **Research agents: parallel foreground Task calls** (NOT `run_in_background`). Launch ALL research agents in a single message with multiple Task tool calls, then wait for all to complete before proceeding.
-5. **Minimal $ARGUMENTS**: Only pass the FEATURE path + a specific question or scope. Never inject file contents.
+**Context management**: Follow the 5 rules in AGENTS.md `## Context Management`. Key: never call TaskOutput, verify via Glob, minimal `$ARGUMENTS`.
 
 ---
 
@@ -82,9 +76,7 @@ gh issue create \
 
 Capture `$ISSUE_NUMBER` from the output. All subsequent `post-issue-progress.sh` calls use this number.
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 1: Understand" "started"
-```
+Post progress: Phase 1 started.
 
 ### Step 1.5 — Taxonomy Scan
 
@@ -143,9 +135,7 @@ For each agent, pass via `$ARGUMENTS`:
 
 ### Step 1.9 — Post Progress
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 1: Understand" "complete" "Requirements clarified, research complete" "- Taxonomy scan: N/8 categories clear\n- User clarified N questions\n- N research agents completed"
-```
+Post progress: Phase 1 complete -- requirements clarified, research complete. Include taxonomy scan results, clarification count, and research agent count in details.
 
 **Quality gate**: All requirements categories must be Clear or have been resolved through clarification/research. No unresolved `[NEEDS CLARIFICATION]` markers may remain.
 
@@ -157,9 +147,7 @@ bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 1: Un
 
 ### Step 2.1 — Launch Design Agent
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 2: Design" "started"
-```
+Post progress: Phase 2 started.
 
 Launch the `sdd-design` agent with `$ARGUMENTS` containing:
 - The FEATURE path (e.g., `specs/feat/s3-static-website/`)
@@ -170,13 +158,7 @@ The agent reads the constitution (`.foundations/memory/constitution.md`) and the
 
 ### Step 2.2 — Verify Design Artifact
 
-After the agent completes, verify `specs/{FEATURE}/design.md` exists using Glob:
-
-```
-Glob: specs/{FEATURE}/design.md
-```
-
-If the file does not exist, the agent failed. Re-launch once. If it fails again, STOP and flag to user.
+After the agent completes, verify `specs/{FEATURE}/design.md` exists via Glob. If the file does not exist, the agent failed. Re-launch once. If it fails again, STOP and flag to user.
 
 ### Step 2.3 — Quick Validation
 
@@ -203,9 +185,7 @@ If any content check fails, the orchestrator edits the file directly to fix. Do 
 
 ### Step 2.4 — Post Progress
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 2: Design" "complete" "Design document ready for review" "- design.md generated with all 7 sections\n- Interface contract, security controls, test scenarios defined"
-```
+Post progress: Phase 2 complete -- design document ready for review. Include section count and key contents in details.
 
 ### Step 2.5 — Await User Approval
 
@@ -242,9 +222,7 @@ Handle responses:
 
 ### Step 3.1 — Launch Implementation
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 3: Build + Test" "started"
-```
+Post progress: Phase 3 started.
 
 Invoke the `tf-implement` skill, which handles the full TDD cycle internally:
 - Reads `specs/{FEATURE}/design.md` for all implementation details
@@ -259,34 +237,16 @@ Pass to `tf-implement` via `$ARGUMENTS`:
 
 ### Step 3.2 — Verify Completion
 
-After `tf-implement` completes, verify all expected artifacts exist using Glob:
-
-**Module files**:
-```
-Glob: main.tf
-Glob: variables.tf
-Glob: outputs.tf
-Glob: versions.tf
-```
-
-**Test files**:
-```
-Glob: tests/*.tftest.hcl
-```
-
-**Example directories**:
-```
-Glob: examples/basic/main.tf
-Glob: examples/complete/main.tf
-```
+After `tf-implement` completes, verify all expected artifacts exist via Glob:
+- Module files: `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf`
+- Test files: `tests/*.tftest.hcl`
+- Examples: `examples/basic/main.tf`, `examples/complete/main.tf`
 
 If any expected files are missing, flag to user with specifics on what is missing.
 
 ### Step 3.3 — Post Progress
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 3: Build + Test" "complete" "Implementation complete" "- Module files: main.tf, variables.tf, outputs.tf, versions.tf\n- Test files: N .tftest.hcl files\n- Examples: basic/ and complete/"
-```
+Post progress: Phase 3 complete -- implementation complete. Include module file list, test file count, and example directories in details.
 
 **Quality gate**: `terraform validate` must pass. All Section 6 checklist items must be marked complete.
 
@@ -298,9 +258,7 @@ bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 3: Bu
 
 ### Step 4.1 — Parallel Validation
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 4: Validate" "started"
-```
+Post progress: Phase 4 started.
 
 Launch ALL validation checks in parallel (multiple Bash calls or a single script):
 
@@ -349,15 +307,7 @@ specs/{FEATURE}/reports/validation_$(date +%Y%m%d-%H%M%S).md
 
 ### Step 4.5 — Post Final Progress
 
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 4: Validate" "complete" "Validation complete -- all checks passed" "- terraform test: PASS\n- terraform validate: PASS\n- terraform fmt: PASS\n- trivy: 0 CRITICAL, 0 HIGH\n- terraform-docs: README generated"
-```
-
-Or if issues remain:
-
-```bash
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Phase 4: Validate" "complete" "Validation complete -- N issues remaining" "- Details of remaining issues"
-```
+Post progress: Phase 4 complete -- validation results. Include pass/fail status for each check (terraform test, validate, fmt, trivy, terraform-docs) in details. If issues remain, include specifics.
 
 ### Step 4.6 — Commit and Create PR
 
@@ -405,19 +355,6 @@ Closes #$ISSUE_NUMBER
 | 3 | tf-task-executor (xN) | `examples/basic/`, `examples/complete/` | Glob for example dirs |
 | 4 | (tools) | `specs/{FEATURE}/reports/validation_*.md` | Glob for report |
 | 4 | (tools) | `README.md` | Glob for README |
-
----
-
-## Phase Summary
-
-```
-Phase 1: Understand    ~8 min     0 artifacts     Environment + requirements + research
-Phase 2: Design        ~8 min     1 artifact      specs/{FEATURE}/design.md
-Phase 3: Build + Test  ~15 min    Module code      .tf files + tests + examples
-Phase 4: Validate      ~5 min     Reports          Validation report + README + PR
-                       -------
-                       ~36 min total
-```
 
 ---
 

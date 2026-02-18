@@ -483,17 +483,11 @@ terraform {
 
 **Constraint**: You MUST validate prerequisites before any operations.
 
-**Requirements**:
+Prerequisites are defined in Section 2. The `validate-env.sh` script validates all prerequisites at workflow start.
 
 - You MUST NOT proceed with Terraform operations without complete prerequisites
 - Missing configuration details MUST be surfaced to the user with clear instructions
 - All Terraform MCP server tool calls MUST use the validated configuration values
-
-**Mandatory Prerequisites**:
-
-- HCP Terraform Organization Name (for publishing/testing)
-- HCP Terraform Project Name
-- Pre-commit hooks installed
 
 ### 8.2 Scope Boundaries
 
@@ -635,44 +629,9 @@ The implementation checklist for each feature is maintained in **`specs/{FEATURE
 
 ### 11.1 SDD v2 Mandatory Phases
 
-**Rule**: The SDD v2 workflow consists of 4 mandatory phases. All phases MUST be completed in order.
+The SDD v2 workflow consists of 4 mandatory sequential phases: Understand, Design, Build + Test, Validate. See `tf-plan-v2` SKILL.md for operational details.
 
-**Phase 1: Understand**
-
-- Environment validation (`.foundations/scripts/bash/validate-env.sh`)
-- Requirements intake (GitHub issue as audit trail)
-- Clarification of ambiguous requirements
-- MCP research (provider docs, public registry patterns, AWS documentation)
-
-**Phase 2: Design**
-
-- Produce a single `specs/{FEATURE}/design.md` artifact that consolidates:
-  - Module interface (variables, outputs, resource mapping)
-  - Architecture and resource dependency planning
-  - Security review findings and mitigations
-  - Implementation checklist (replaces standalone task tracking)
-- Security review via `aws-security-advisor` MUST be incorporated into the design
-- The design document is the single source of truth for implementation
-
-**Phase 3: Build + Test**
-
-- TDD approach: write tests BEFORE implementation code
-- `terraform test` MUST pass after each logical implementation phase
-- Implementation follows the checklist in `specs/{FEATURE}/design.md` Section 6
-- Tests in `tests/` using `.tftest.hcl` format
-- Examples in `examples/basic/` and `examples/complete/`
-
-**Phase 4: Validate**
-
-- Run validation checks in parallel:
-  - `terraform test` — full test suite execution
-  - `terraform validate` — configuration validity
-  - `terraform fmt -check` — formatting compliance
-  - `trivy` — security scanning for misconfigurations
-  - `terraform-docs` — documentation generation and verification
-- All checks MUST pass before the feature is considered complete
-
-**Rationale**: The 4-phase workflow reduces overhead while maintaining rigor. The single design document eliminates artifact fragmentation and keeps all design decisions co-located.
+All four phases are mandatory. No phase may be skipped.
 
 ### 11.2 Optional Steps Within Phases
 

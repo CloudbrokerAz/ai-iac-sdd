@@ -12,50 +12,13 @@ AI-assisted development of enterprise-ready Terraform modules via spec-driven de
 6. **Parallel Where Safe**: Independent tasks run concurrently. MCP-dependent tasks run sequentially.
 7. **Quality Gates**: CRITICAL findings block progression. Reviews use evidence-based findings with citations.
 
-## Workflow Overview
+## Workflow
 
-```
- Phase 1              Phase 2           Phase 3              Phase 4
- ────────────        ────────────      ────────────         ────────────
- UNDERSTAND      →   DESIGN       →   BUILD + TEST    →   VALIDATE
- Clarify + Research   Single doc        TDD-style           Security + Quality
+See `tf-plan-v2` SKILL.md (`.claude/skills/tf-plan-v2.md`) for the full 4-phase workflow: Understand, Design, Build+Test, Validate. See `tf-research-heuristics` skill for MCP tool priority and research strategies.
 
- ~8 min               ~8 min            ~15 min              ~5 min
- 0 artifacts          1 artifact        Module code          Test results
-                      (design.md)       + test files         Security scan
-```
+## Directory Layout
 
-**Phase 1: Understand** — Validate environment, intake requirements, clarify ambiguities against the 8-category taxonomy (always ask about security defaults), launch parallel MCP research agents.
-
-**Phase 2: Design** — Produce a single `specs/{FEATURE}/design.md` containing interface contract, resource inventory, security controls, test scenarios, and implementation checklist.
-
-**Phase 3: Build + Test** — Write `.tftest.hcl` files from design scenarios first, then implement module code phase-by-phase. Run `terraform validate` and `terraform test` after each phase.
-
-**Phase 4: Validate** — Run all checks in parallel: `terraform test`, `terraform validate`, `terraform fmt -check`, `trivy config .`, `terraform-docs`. Fix any failures and confirm clean.
-
-## MCP Tools Priority
-
-1. `search_documentation` -> `read_documentation` (AWS best practices and resource behavior)
-2. `search_providers` -> `get_provider_details` (provider resource docs -- arguments, attributes, examples)
-3. `search_modules` / `search_private_modules` (study public/private registry for design patterns and conventions)
-4. `get_regional_availability` (validate resource/feature availability in target regions)
-
-## Directory Map
-
-| Path | Purpose |
-|------|---------|
-| `main.tf`, `variables.tf`, `outputs.tf` | Root module -- primary resource definitions |
-| `specs/{FEATURE}/design.md` | THE single design artifact (replaces spec, plan, contracts, data model, tasks) |
-| `tests/` | Terraform test files (`.tftest.hcl`) -- written before module code |
-| `examples/basic/` | Minimal usage example with provider config |
-| `examples/complete/` | Full-featured usage example |
-| `modules/` | Submodules (optional, for complex modules) |
-| `.foundations/` | Constitution, templates, and scripts |
-| `.foundations/memory/constitution.md` | Non-negotiable rules for all Terraform code generation |
-| `.foundations/templates/design-template.md` | Standardized template for design.md |
-| `.foundations/scripts/bash/` | Utility scripts (validate-env, checkpoint-commit, post-issue-progress, create-new-feature, common) |
-| `.claude/skills/` | Skill definitions (orchestrators and knowledge) |
-| `.claude/agents/` | Agent definitions (subagent specifications) |
+See constitution Section 3.2 (`.foundations/memory/constitution.md`) for the canonical file organization rules and directory map.
 
 ## Agent Architecture
 
@@ -103,28 +66,11 @@ Skills provide domain knowledge and orchestration logic. They are loaded into ag
 
 ## Prerequisites
 
-1. GitHub CLI authenticated: `gh auth status`
-2. HCP Terraform token: `$TFE_TOKEN` set (for publishing/testing)
-3. MCP servers configured: terraform, aws-knowledge-mcp-server
-4. Pre-commit hooks installed: `pre-commit install`
+See constitution Section 2 (`.foundations/memory/constitution.md`) for environment prerequisites (CLI tools, tokens, MCP servers).
 
 ## Testing Strategy
 
-Module testing follows a TDD approach. Tests are written before module code and drive the implementation.
-
-1. **Write tests first** from `design.md` test scenarios. Each scenario becomes a `run` block in a `.tftest.hcl` file. Each assertion in the design maps 1:1 to an `assert` block.
-2. **Plan-only tests** (`command = plan`) for fast feedback without cloud access. Validate resource configuration, conditional creation, variable validation, and security defaults.
-3. **Run tests after each implementation phase**. Expect failures early -- that is the point of TDD. Track progress by counting passing assertions.
-4. **Variable validation tests** use `expect_failures` to verify that invalid inputs are rejected with clear error messages.
-5. **Security assertions exist from line 1**. Encryption, public access blocks, TLS enforcement, and least-privilege policies are tested before any feature code is written.
-6. **Pre-commit checks**: `terraform fmt`, `terraform validate`, `tflint`, `trivy`, `terraform-docs`.
-
-```
-tests/
-  basic.tftest.hcl         # Secure defaults, features disabled, core outputs
-  complete.tftest.hcl       # All features enabled, security assertions
-  validation.tftest.hcl     # All invalid input cases (expect_failures)
-```
+See constitution Section 6.3 (`.foundations/memory/constitution.md`) for TDD rules and test file conventions. See `tf-implement` skill for the test-first implementation workflow.
 
 ## Operational Notes
 

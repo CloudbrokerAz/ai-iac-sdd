@@ -7,38 +7,15 @@ argument-hint: "[feature-name] - Implement from existing specs/{feature}/design.
 
 # TDD Implementation Orchestrator
 
-## Context Management (CRITICAL)
+**Context management**: Follow the 5 rules in AGENTS.md `## Context Management`.
 
-1. **NEVER call TaskOutput** to read subagent results. All agents write artifacts to disk — reading them back into the orchestrator bloats context and triggers compaction.
-2. **Verify completion via Glob or Grep** — do NOT read full file contents into the orchestrator.
-3. **Task executors**: Run as **parallel foreground Task calls** (NOT `run_in_background`). Launch all independent task executors in a single message.
-4. **Quality/report agents**: Verify output file exists via Glob, then Grep for severity keywords (e.g., `Critical`, `FAIL`) — do NOT read full report contents.
-5. **Minimal $ARGUMENTS**: Only pass the FEATURE path + task scope. Never inject file contents.
-
-### Expected Output Files
-
-| Phase | Agent/Tool | Output | Verification |
-|-------|-----------|--------|--------------|
-| 2 | tf-test-writer | `tests/*.tftest.hcl` | Glob |
-| 3 | tf-task-executor (xN) | `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf` | Glob |
-| 4 | (orchestrator) | `examples/basic/*`, `examples/complete/*` | Glob |
+**Expected outputs**: See tf-plan-v2 SKILL.md Expected Output Files table for the full mapping. This skill produces: `tests/*.tftest.hcl`, `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf`, `examples/basic/`, `examples/complete/`.
 
 ## Workflow
 
 Execute phases sequentially. Post progress to GH issue before/after each phase. Checkpoint commit after each phase.
 
-Use the following template for GitHub issue progress updates:
-
-```
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>" "$DETAILS"
-```
-
-### Example
-
-```
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementation" "started"
-bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementation" "complete" "$DETAILS"
-```
+**Progress updates**: Post progress using `post-issue-progress.sh` (see tf-plan-v2 SKILL.md for the call signature template).
 
 ---
 
@@ -58,10 +35,7 @@ bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementat
 4. Verify `specs/{FEATURE}/design.md` exists:
    - Use Glob: `specs/{FEATURE}/design.md`
    - If missing: **STOP** — display: `"design.md not found for {FEATURE}. Run /tf-plan-v2 first or create design.md manually."`
-5. Post progress:
-   ```
-   bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementation" "started"
-   ```
+5. Post progress: implementation started.
 
 ---
 
@@ -95,10 +69,7 @@ This is the core TDD step: write all test files BEFORE any module code exists.
    git commit -m "feat({FEATURE}): add test files from design"
    ```
 
-5. Post progress:
-   ```
-   bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Tests" "complete" "Tests written — 0/N passing (TDD baseline)"
-   ```
+5. Post progress: tests written (TDD baseline).
 
 ---
 
@@ -136,10 +107,7 @@ This is the core TDD step: write all test files BEFORE any module code exists.
    - If failures remain: fix module code, re-run `terraform test`. Maximum 3 fix iterations.
    - If still failing after 3 iterations: report remaining failures and STOP.
 
-5. Post progress:
-   ```
-   bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementation" "complete" "Implementation complete — N/N tests passing"
-   ```
+5. Post progress: implementation complete.
 
 ---
 
@@ -227,10 +195,7 @@ This is the core TDD step: write all test files BEFORE any module code exists.
    git commit -m "feat({FEATURE}): implementation complete"
    ```
 
-7. Post progress:
-   ```
-   bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "Implementation" "complete"
-   ```
+7. Post progress: implementation complete.
 
 ---
 
