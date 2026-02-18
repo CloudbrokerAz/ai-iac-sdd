@@ -213,7 +213,7 @@ Only include what the model would get wrong without this guidance.
 <!-- =====================================================================
      PATTERN C: Reference / Lookup Skill
      Use for: taxonomies, checklists, evaluation criteria, scoring rubrics
-     Examples: tf-domain-taxonomy, tf-judge-criteria, tf-checklist-patterns
+     Examples: tf-domain-taxonomy, tf-security-baselines, tf-report-template
      ===================================================================== -->
 
 ## Categories

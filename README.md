@@ -60,18 +60,18 @@ echo $TFE_TOKEN       # HCP Terraform token set
 │   │   ├── sdd-research.md               # Answers research questions via MCP tools
 │   │   ├── tf-test-writer.md             # Converts design scenarios to .tftest.hcl
 │   │   └── tf-task-executor.md           # Implements one checklist item from design.md
-│   └── skills/                           # Skill definitions (10 skills + 2 orchestrators)
+│   └── skills/                           # Skill definitions (8 skills + 3 orchestrators)
 │       ├── tf-plan-v2/                   # Orchestrator: full 4-phase workflow
 │       ├── tf-implement/                 # Orchestrator: TDD-aware implementation
+│       ├── tf-e2e-tester/               # Orchestrator: automated E2E test harness
 │       ├── tf-domain-taxonomy/           # 8-category requirement scanning
 │       ├── tf-research-heuristics/       # MCP research strategies
 │       ├── tf-architecture-patterns/     # Module architecture patterns
 │       ├── tf-implementation-patterns/   # Terraform code patterns
 │       ├── terraform-test/               # Terraform test patterns (.tftest.hcl)
 │       ├── terraform-style-guide/        # Code style conventions
-│       ├── tf-judge-criteria/            # 6-dimension quality scoring rubric
-│       ├── tf-compound-patterns/         # Cross-module patterns from prior builds
-│       └── tf-report-template/           # Validation results summary
+│       ├── tf-report-template/           # Validation results summary
+│       └── tf-security-baselines/        # CIS/NIST security baselines
 ├── .foundations/
 │   ├── memory/
 │   │   └── constitution.md               # Non-negotiable rules for all agents
@@ -129,20 +129,25 @@ Skills provide domain knowledge and orchestration logic, loaded into agent conte
 |-------|---------|
 | `tf-plan-v2` | Full 4-phase workflow entry point: Understand, Design, Build+Test, Validate |
 | `tf-implement` | TDD-aware implementation: write tests first, run after each phase |
+| `tf-e2e-tester` | Automated E2E test harness: runs full workflow cycle with test defaults |
 
-### Domain Knowledge
+### Domain Knowledge — User-Invocable
+
+| Skill | Purpose |
+|-------|---------|
+| `tf-architecture-patterns` | Patterns for module architecture -- composition, conditionals, policy |
+| `tf-implementation-patterns` | Patterns for Terraform code -- locals, for_each, dynamic blocks, lifecycle |
+| `terraform-test` | Terraform test patterns -- plan-only, conditional resources, validation, mocks |
+| `terraform-style-guide` | Code style conventions -- naming, formatting, file organization |
+
+### Domain Knowledge — Background
 
 | Skill | Purpose |
 |-------|---------|
 | `tf-domain-taxonomy` | 8-category taxonomy for scanning requirements and identifying gaps |
 | `tf-research-heuristics` | Strategies for MCP research -- tools, order, what to look for |
-| `tf-architecture-patterns` | Patterns for module architecture -- composition, conditionals, policy |
-| `tf-implementation-patterns` | Patterns for Terraform code -- locals, for_each, dynamic blocks, lifecycle |
-| `terraform-test` | Terraform test patterns -- plan-only, conditional resources, validation, mocks |
-| `terraform-style-guide` | Code style conventions -- naming, formatting, file organization |
-| `tf-judge-criteria` | 6-dimension quality scoring rubric for module evaluation |
-| `tf-compound-patterns` | Cross-module patterns discovered during prior builds |
 | `tf-report-template` | Validation results summary template |
+| `tf-security-baselines` | CIS/NIST security baselines and risk rating framework |
 
 ## Testing Strategy
 

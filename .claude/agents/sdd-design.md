@@ -5,6 +5,7 @@ model: opus
 color: blue
 skills:
   - tf-architecture-patterns
+  - tf-security-baselines
 tools:
   - Read
   - Write

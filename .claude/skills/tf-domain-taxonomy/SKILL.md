@@ -1,6 +1,7 @@
 ---
 name: tf-domain-taxonomy
 description: 8-category ambiguity taxonomy for Terraform infrastructure specifications. Structured scan methodology, prioritization heuristics, and clarification question patterns. Use when scanning Terraform specifications for ambiguity, missing decision points, or underspecified requirements.
+user-invocable: false
 ---
 
 # Terraform Specification Ambiguity Taxonomy

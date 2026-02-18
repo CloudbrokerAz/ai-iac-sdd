@@ -1,6 +1,7 @@
 ---
 name: tf-report-template
 description: Validation results summary template for Phase 4 output. Provides the format for reporting terraform test, validate, fmt, trivy, and security checklist results.
+user-invocable: false
 ---
 
 # Validation Results Report Template

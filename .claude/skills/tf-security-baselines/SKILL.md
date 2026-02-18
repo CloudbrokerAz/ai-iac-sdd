@@ -1,6 +1,7 @@
 ---
 name: tf-security-baselines
 description: AWS security assessment domains, risk rating framework, CIS/NIST reference baselines, and evidence-based finding format. Use when reviewing AWS security posture, assessing risk, or applying CIS/NIST baselines to Terraform configurations.
+user-invocable: false
 ---
 
 # Terraform Security Baselines
