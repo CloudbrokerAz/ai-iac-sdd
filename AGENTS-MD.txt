@@ -32,9 +32,6 @@ Agents are subagents dispatched by orchestrator skills. Each agent has a single 
 | `sdd-research` | opus | Answer one specific research question using MCP tools | Feature path + research question | Research findings (returned to orchestrator, not persisted) |
 | `tf-test-writer` | sonnet | Convert design.md test scenarios into `.tftest.hcl` files | `specs/{FEATURE}/design.md` Section 5 | `tests/*.tftest.hcl` |
 | `tf-task-executor` | opus | Implement one checklist item from design.md | `specs/{FEATURE}/design.md` + checklist item + existing code | Modified `.tf` files |
-| `tf-deployer` | opus | Run tests and optionally deploy to sandbox | Module code + test files | Test results + deploy status |
-| `code-quality-judge` | opus | Score module across 6 quality dimensions | Completed module code + design.md | Quality report with scores and findings |
-| `aws-security-advisor` | opus | Assess security posture against CIS/Well-Architected controls | Module code + security controls from design.md | Security assessment with pass/fail per control |
 
 ## Skill Architecture
 

@@ -25,7 +25,7 @@ tools:
 
 Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 6 (Implementation Checklist), producing Terraform module code using raw resources with secure defaults following standard module structure.
 
-## Workflow
+## Instructions
 
 1. **Read**: Parse checklist item from $ARGUMENTS. Load `specs/{FEATURE}/design.md` for full context — Section 2 (Interface Contract) for variable definitions, types, defaults, and validations; Section 3 (Resources & Architecture) for resource inventory and architecture decisions; Section 4 (Security Controls) for security requirements.
 2. **Context**: Load relevant existing `.tf` files (if any exist from prior checklist items) to understand current module state and avoid conflicts.

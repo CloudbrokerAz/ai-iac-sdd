@@ -2,7 +2,7 @@
 name: sdd-research
 description: Investigate specific unknowns via AWS docs, provider docs, and registry patterns. Each instance answers ONE research question. Use during planning phase to resolve resource behavior, best practices, and architectural unknowns.
 model: opus
-color: cyan
+color: green
 skills:
   - tf-research-heuristics
 tools:
@@ -29,7 +29,7 @@ tools:
 
 Answer ONE research question per instance using AWS documentation, provider docs, and registry patterns as authoritative sources.
 
-## Workflow
+## Instructions
 
 1. **Parse**: Understand the research question and context from `$ARGUMENTS`
 2. **AWS Docs**: Search AWS documentation for service behavior, security best practices, and architectural guidance

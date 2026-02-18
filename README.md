@@ -55,14 +55,11 @@ echo $TFE_TOKEN       # HCP Terraform token set
 .
 ├── .claude/
 │   ├── CLAUDE.md                         # Project context for Claude Code
-│   ├── agents/                           # Agent definitions (7 agents)
+│   ├── agents/                           # Agent definitions (4 agents)
 │   │   ├── sdd-design.md                 # Produces design.md from requirements + research
 │   │   ├── sdd-research.md               # Answers research questions via MCP tools
 │   │   ├── tf-test-writer.md             # Converts design scenarios to .tftest.hcl
-│   │   ├── tf-task-executor.md           # Implements one checklist item from design.md
-│   │   ├── tf-deployer.md                # Runs tests and optionally deploys to sandbox
-│   │   ├── code-quality-judge.md         # Scores module across 6 quality dimensions
-│   │   └── aws-security-advisor.md       # Assesses security posture against CIS/WA controls
+│   │   └── tf-task-executor.md           # Implements one checklist item from design.md
 │   └── skills/                           # Skill definitions (10 skills + 2 orchestrators)
 │       ├── tf-plan-v2/                   # Orchestrator: full 4-phase workflow
 │       ├── tf-implement/                 # Orchestrator: TDD-aware implementation
@@ -121,9 +118,6 @@ Agents are subagents dispatched by orchestrator skills. Each agent has a single 
 | `sdd-research` | Answers one specific research question using MCP tools |
 | `tf-test-writer` | Converts design.md test scenarios into `.tftest.hcl` files |
 | `tf-task-executor` | Implements one checklist item from design.md |
-| `tf-deployer` | Runs tests and optionally deploys to sandbox |
-| `code-quality-judge` | Scores module across 6 quality dimensions |
-| `aws-security-advisor` | Assesses security posture against CIS/Well-Architected controls |
 
 ## Skill Architecture
 

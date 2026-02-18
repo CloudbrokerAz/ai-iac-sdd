@@ -2,6 +2,7 @@
 name: sdd-design
 description: Produce a single design.md from clarified requirements and research findings. Merges specification, planning, and security baseline concerns into one artifact covering interface contract, resource inventory, security controls, test scenarios, and implementation checklist.
 model: opus
+color: blue
 skills:
   - tf-architecture-patterns
 tools:
@@ -23,7 +24,7 @@ tools:
 
 Produce a single `specs/{FEATURE}/design.md` from clarified requirements and research findings. This document is the SINGLE SOURCE OF TRUTH for the module — replacing what was previously five separate artifacts (spec, plan, contracts, data model, tasks). Every downstream agent (test writer, implementer, reviewer) reads only this file.
 
-## Workflow
+## Instructions
 
 1. **Read Context**: Load `.foundations/memory/constitution.md` (for security defaults §1.2, file layout §3.2, variable conventions §3.4, security §4, tags §7) and `.foundations/templates/design-template.md` (for the authoritative section structure and template rules).
 
@@ -178,6 +179,29 @@ Before finalizing §4, verify each domain is addressed:
 4. **Logging & Monitoring**: CloudTrail, VPC Flow Logs, access logs, CloudWatch alerting
 5. **Resilience**: Backup strategy, multi-AZ where applicable, deletion protection
 6. **Compliance**: Tagging per constitution §7, audit trails, data residency awareness
+
+## Examples
+
+**Good** (Section 2 excerpt — secure defaults, validation rules, no duplication):
+
+```markdown
+| Variable | Type | Required | Default | Validation | Sensitive | Description |
+|----------|------|----------|---------|------------|-----------|-------------|
+| `bucket_name` | `string` | Yes | -- | `length >= 3 && length <= 63` | No | Name of the S3 bucket |
+| `enable_versioning` | `bool` | No | `false` | -- | No | Enable object versioning |
+| `encryption_algorithm` | `string` | No | `"aws:kms"` | `one of ["aws:kms", "AES256"]` | No | Server-side encryption algorithm |
+```
+
+**Bad** (vague defaults, missing validation, duplicates resource details from Section 3):
+
+```markdown
+| Variable | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `bucket_name` | `string` | Yes | | Name |
+| `encryption` | `string` | No | | Encryption for aws_s3_bucket_server_side_encryption_configuration |
+```
+
+Missing: secure default for encryption, validation rule, Sensitive column. Leaks resource type into interface contract.
 
 ## Output
 
