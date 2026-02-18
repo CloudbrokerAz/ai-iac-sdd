@@ -131,7 +131,6 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 - Every resource selection must reference research findings (evidence-based)
 - Provider version derived from research, not guessed
 - Follow constitution §3.2 for standard module structure
-- Check `.foundations/memory/patterns/` for proven resource combinations (prior art)
 - Document rationale for all architectural decisions with alternatives considered
 
 ### Security Controls (Section 4)

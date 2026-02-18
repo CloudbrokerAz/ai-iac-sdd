@@ -1,6 +1,8 @@
 ---
 name: tf-e2e-tester
 description: "Non-interactive test harness for end-to-end Terraform workflow testing. Runs full `/tf-plan-v2` -> `/tf-implement` cycle with test defaults, bypassing user prompts for automated validation. Pass the prompt filename as the skill argument."
+user-invocable: true
+argument-hint: "[prompt-file] - Run E2E test from prompts/ directory"
 ---
 
 # E2E Test Orchestrator

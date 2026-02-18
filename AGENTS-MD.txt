@@ -43,25 +43,25 @@ Skills provide domain knowledge and orchestration logic. They are loaded into ag
 |-------|---------|
 | `tf-plan-v2` | 4-phase workflow entry point: Understand -> Design -> Build+Test -> Validate |
 | `tf-implement` | TDD-aware implementation: write tests first, run after each phase |
+| `tf-e2e-tester` | Automated E2E test harness: runs full workflow cycle with test defaults |
 
-### Domain Knowledge (kept from v1)
+### Domain Knowledge — User-Invocable
+
+| Skill | Purpose |
+|-------|---------|
+| `tf-architecture-patterns` | Patterns for module architecture -- resource composition, conditional creation, policy composition |
+| `tf-implementation-patterns` | Patterns for Terraform code -- locals, for_each, dynamic blocks, lifecycle |
+| `terraform-test` | Terraform test patterns -- plan-only, conditional resources, validation errors, mocks |
+| `terraform-style-guide` | Code style conventions -- naming, formatting, file organization |
+
+### Domain Knowledge — Background
 
 | Skill | Purpose |
 |-------|---------|
 | `tf-domain-taxonomy` | 8-category taxonomy for scanning requirements and identifying gaps |
 | `tf-research-heuristics` | Strategies for MCP research -- what to look for, which tools, in what order |
-| `tf-architecture-patterns` | Patterns for module architecture -- resource composition, conditional creation, policy composition |
-| `tf-implementation-patterns` | Patterns for Terraform code -- locals, for_each, dynamic blocks, lifecycle |
-| `terraform-test` | Terraform test patterns -- plan-only, conditional resources, validation errors, mocks (elevated to central role in v2) |
-| `terraform-style-guide` | Code style conventions -- naming, formatting, file organization |
-| `tf-judge-criteria` | 6-dimension quality scoring rubric for module evaluation |
-| `tf-compound-patterns` | Post-implementation compound learning -- cross-module patterns discovered during builds |
-
-### Simplified (from v1)
-
-| Skill | Purpose |
-|-------|---------|
-| `tf-report-template` | Validation results summary (simplified from full readiness report) |
+| `tf-report-template` | Validation results summary template |
+| `tf-security-baselines` | CIS/NIST security baselines and risk rating framework |
 
 ## Prerequisites
 

@@ -1,7 +1,7 @@
 ---
 name: tf-implement
 description: SDD v2 Phases 3-4. TDD implementation and validation from an existing design.md. Writes tests first, builds module, validates, creates PR.
-user-invokable: true
+user-invocable: true
 argument-hint: "[feature-name] - Implement from existing specs/{feature}/design.md"
 ---
 
