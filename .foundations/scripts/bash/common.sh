@@ -148,7 +148,6 @@ CURRENT_BRANCH='$current_branch'
 HAS_GIT='$has_git_repo'
 FEATURE_DIR='$feature_dir'
 FEATURE_DESIGN='$feature_dir/design.md'
-RESEARCH_GLOB='$feature_dir/research-*.md'
 EOF
 }
 

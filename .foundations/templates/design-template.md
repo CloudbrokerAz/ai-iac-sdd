@@ -63,28 +63,52 @@ It is not repeated anywhere else in any artifact.}
 | Public access | {how} | {Yes/No} | {CIS/WA control} |
 | IAM least privilege | {how} | {Yes/No} | {CIS/WA control} |
 | Logging | {how} | {Yes/No} | {CIS/WA control} |
+| Tagging | {how} | {Yes/No} | {CIS/WA control} |
 
-{If a security control is hardcoded (not configurable), document WHY.
-If it is configurable, the default MUST be the secure option.}
+{Rules:
+- If a control is hardcoded (not configurable), document WHY.
+- If it is configurable, the default MUST be the secure option.
+- Mark N/A where a domain does not apply, with justification.
+- Reference column must cite a CIS AWS Benchmark or AWS Well-Architected control.}
 
 ---
 
 ## 5. Test Scenarios
 
-### Scenario: {name} ({example directory})
+{Three scenario groups are required: Secure Defaults, Full Features, and Validation Errors.}
 
-**Purpose**: {what this scenario validates}
-**Example**: `examples/{name}/`
-**Command**: `plan` or `apply`
+### Scenario: Secure Defaults (basic)
+
+**Purpose**: Verify the module works with minimal inputs and security is enabled by default
+**Example**: `examples/basic/`
+**Command**: `plan`
 
 **Inputs**:
 ```hcl
-{variable assignments for this scenario}
+{only required variables -- minimal configuration}
 ```
 
 **Assertions**:
-- {plain-language assertion that maps to a tftest assert block}
-- {another assertion}
+- {security assertion: encryption enabled by default}
+- {security assertion: public access blocked by default}
+- {functional assertion: core resource created}
+- ...
+
+### Scenario: Full Features (complete)
+
+**Purpose**: Verify all features enabled, all optional resources created, all outputs populated
+**Example**: `examples/complete/`
+**Command**: `plan`
+
+**Inputs**:
+```hcl
+{all features enabled, all optional variables set}
+```
+
+**Assertions**:
+- {all optional resources created}
+- {all outputs populated}
+- {security assertions still hold}
 - ...
 
 ### Scenario: Validation Errors

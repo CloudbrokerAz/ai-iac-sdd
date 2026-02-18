@@ -27,7 +27,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 
 ## Instructions
 
-1. **Read Context**: Load `.foundations/memory/constitution.md` (for security defaults §1.2, file layout §3.2, variable conventions §3.4, security §4, tags §7) and `.foundations/templates/design-template.md` (for the authoritative section structure and template rules).
+1. **Read Context**: Load `.foundations/memory/constitution.md` (for security defaults §1.2, file layout §2.1, naming §2.2, variable conventions §2.3, security §3, tags §3.3) and `.foundations/templates/design-template.md` (for the authoritative section structure and template rules).
 
 2. **Parse Input**: Extract from `$ARGUMENTS`:
    - The FEATURE path (e.g., `specs/vpc/`)
@@ -37,6 +37,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 3. **Design**: Populate ALL 7 sections of the design template. Each section has specific rules:
 
    ### Section 1 — Purpose
+
    Describe WHAT this module creates and WHY it exists. Identify who consumes it and what problem it solves. Define the scope boundary (what is explicitly OUT of scope).
    - **NEVER include implementation details**: no resource types, no provider APIs, no internal wiring
    - Requirements must be testable and unambiguous
@@ -44,6 +45,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Frame capabilities in terms of outcomes, not resources (e.g., "network traffic between tiers must be restricted" not "configure aws_security_group to allow port 5432")
 
    ### Section 2 — Interface Contract
+
    Define the module's public interface — inputs and outputs. This table is the SINGLE SOURCE OF TRUTH for the interface; it is not repeated anywhere else.
    - **Inputs table columns**: Variable | Type | Required | Default | Validation | Sensitive | Description
    - **Outputs table columns**: Output | Type | Conditional On | Description
@@ -51,12 +53,13 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Sensitive variables (passwords, keys, tokens) MUST be marked `Yes` in the Sensitive column
    - Security-sensitive inputs MUST have secure defaults (e.g., `public_access = false`, `encryption_enabled = true`)
    - Include `create_*` boolean variables for conditional resource creation
-   - Variable names use `snake_case` following constitution §3.3
+   - Variable names use `snake_case` following constitution §2.2
 
    ### Section 3 — Resources & Architecture
+
    Define the resource inventory and architectural decisions, grounded in research findings.
    - **Resource Inventory table columns**: Resource Type | Logical Name | Conditional | Depends On | Key Configuration
-   - Use `this` as the primary resource name for single-instance resources (constitution §3.3)
+   - Use `this` as the primary resource name for single-instance resources (constitution §2.2)
    - Use descriptive names for multiple resources of the same type (e.g., `public`, `private`)
    - **Every resource selection MUST reference research findings** — cite which research question/finding justified the choice
    - Provider version MUST be derived from research findings, not guessed — use `>=` constraints per constitution
@@ -64,13 +67,14 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Follow `tf-architecture-patterns` for module composition, conditional creation, and policy patterns
 
    ### Section 4 — Security Controls
+
    Define security enforcement for the module. Every module MUST address the 6 security domains:
    - **Encryption at rest** — KMS, SSE, volume encryption. Default: enabled.
    - **Encryption in transit** — TLS, HTTPS-only, SSL certificates. Default: enforced.
    - **Public access** — Public IPs, public endpoints, S3 public access blocks. Default: denied.
    - **IAM least privilege** — Scoped policies, specific resource ARNs, no wildcards. Default: minimal permissions.
    - **Logging** — CloudTrail, VPC Flow Logs, access logs, CloudWatch. Default: enabled.
-   - **Tagging** — Required tags per constitution §7.
+   - **Tagging** — Required tags per constitution §3.3.
    - **Security Controls table columns**: Control | Enforcement | Configurable? | Reference
    - Mark `N/A` where a domain does not apply (with justification)
    - Every control MUST have a CIS AWS Benchmark or AWS Well-Architected reference
@@ -81,6 +85,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Sensitive variables and outputs MUST use `sensitive = true`
 
    ### Section 5 — Test Scenarios
+
    Define test scenarios that will drive TDD implementation. Three scenario groups are required:
    - **Secure Defaults** (basic example) — Verify the module works with minimal inputs and security is enabled by default
    - **Full Features** (complete example) — Verify all features enabled, all optional resources created, all outputs populated
@@ -92,6 +97,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Validation error scenarios use `expect_failures` to verify rejection of bad inputs
 
    ### Section 6 — Implementation Checklist
+
    Define 4-8 coarse-grained implementation items, ordered by dependency.
    - Each item = one implementation pass, completable in one agent turn
    - Standard ordering: Scaffold -> Security core -> Feature set -> Examples -> Tests -> Polish
@@ -99,6 +105,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - NO fine-grained task breakdowns — keep items at the logical-unit level
 
    ### Section 7 — Open Questions
+
    List any unresolved items marked `[DEFERRED]` with context. This section SHOULD be empty if Phase 1 clarification was thorough.
 
 4. **Validate**: Before writing the file, check completeness:
@@ -116,24 +123,28 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 ## Constraints
 
 ### Purpose (Section 1)
+
 - Describe WHAT and WHY — never HOW
 - No resource types, no provider APIs, no internal wiring
 - All requirements must be testable and unambiguous
 - Maximum 3 `[NEEDS CLARIFICATION]` markers — make informed guesses and document assumptions
 
 ### Interface Contract (Section 2)
+
 - Variables must include validation rules for user-facing inputs
 - Sensitive variables marked with `Sensitive = Yes`
 - Security-sensitive inputs default to the secure option
 - This table is the single source of truth — not duplicated elsewhere
 
 ### Resources & Architecture (Section 3)
+
 - Every resource selection must reference research findings (evidence-based)
 - Provider version derived from research, not guessed
-- Follow constitution §3.2 for standard module structure
+- Follow constitution §2.1 for standard module structure
 - Document rationale for all architectural decisions with alternatives considered
 
 ### Security Controls (Section 4)
+
 - Every module must address: encryption at rest, encryption in transit, public access, IAM least privilege, logging, and tagging
 - Mark N/A where not applicable with justification
 - Reference CIS AWS Benchmark or Well-Architected for each control
@@ -142,19 +153,22 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 - No credentials in modules — provider auth is the consumer's responsibility
 
 ### Test Scenarios (Section 5)
+
 - Use `command = plan` for all plan-only tests
 - Map 1:1 from design assertion to `.tftest.hcl` assert block
 - Include security assertions from line 1
 - Three scenario groups required: secure defaults, full features, validation errors
 
 ### Implementation Checklist (Section 6)
+
 - Coarse-grained: 4-8 items only
 - Ordered by dependency
 - No line references between sections (template rule)
 - Each item completable in one agent turn
 
 ### Cross-Cutting
-- Cross-reference constitution §3.2 (file layout), §4 (security), §7 (tags) during design
+
+- Cross-reference constitution §2.1 (file layout), §3 (security), §3.3 (tags) during design
 - Maximum 3 `[NEEDS CLARIFICATION]` markers total — prefer informed assumptions with documented rationale
 - Naming consistency: resource and variable names must be canonical throughout the document
 
@@ -162,12 +176,12 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 
 Use this when assessing severity of security design choices:
 
-| Rating | Meaning | Example |
-|--------|---------|---------|
-| **Critical (P0)** | Block deployment | Hardcoded credentials, public S3 with sensitive data, IAM `*:*` |
-| **High (P1)** | Fix before production | Unencrypted storage, overly permissive security groups, missing audit logging |
-| **Medium (P2)** | Fix in current sprint | Missing VPC Flow Logs, no MFA, weak password policy |
-| **Low (P3)** | Add to backlog | Missing resource tags, outdated AMI |
+| Rating            | Meaning               | Example                                                                       |
+| ----------------- | --------------------- | ----------------------------------------------------------------------------- |
+| **Critical (P0)** | Block deployment      | Hardcoded credentials, public S3 with sensitive data, IAM `*:*`               |
+| **High (P1)**     | Fix before production | Unencrypted storage, overly permissive security groups, missing audit logging |
+| **Medium (P2)**   | Fix in current sprint | Missing VPC Flow Logs, no MFA, weak password policy                           |
+| **Low (P3)**      | Add to backlog        | Missing resource tags, outdated AMI                                           |
 
 ## Security Domain Checklist
 
@@ -178,27 +192,27 @@ Before finalizing §4, verify each domain is addressed:
 3. **Network Security**: Private subnets default, security groups deny-all default, no 0.0.0.0/0 ingress
 4. **Logging & Monitoring**: CloudTrail, VPC Flow Logs, access logs, CloudWatch alerting
 5. **Resilience**: Backup strategy, multi-AZ where applicable, deletion protection
-6. **Compliance**: Tagging per constitution §7, audit trails, data residency awareness
+6. **Compliance**: Tagging per constitution §3.3, audit trails, data residency awareness
 
 ## Examples
 
 **Good** (Section 2 excerpt — secure defaults, validation rules, no duplication):
 
 ```markdown
-| Variable | Type | Required | Default | Validation | Sensitive | Description |
-|----------|------|----------|---------|------------|-----------|-------------|
-| `bucket_name` | `string` | Yes | -- | `length >= 3 && length <= 63` | No | Name of the S3 bucket |
-| `enable_versioning` | `bool` | No | `false` | -- | No | Enable object versioning |
-| `encryption_algorithm` | `string` | No | `"aws:kms"` | `one of ["aws:kms", "AES256"]` | No | Server-side encryption algorithm |
+| Variable               | Type     | Required | Default     | Validation                     | Sensitive | Description                      |
+| ---------------------- | -------- | -------- | ----------- | ------------------------------ | --------- | -------------------------------- |
+| `bucket_name`          | `string` | Yes      | --          | `length >= 3 && length <= 63`  | No        | Name of the S3 bucket            |
+| `enable_versioning`    | `bool`   | No       | `false`     | --                             | No        | Enable object versioning         |
+| `encryption_algorithm` | `string` | No       | `"aws:kms"` | `one of ["aws:kms", "AES256"]` | No        | Server-side encryption algorithm |
 ```
 
 **Bad** (vague defaults, missing validation, duplicates resource details from Section 3):
 
 ```markdown
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `bucket_name` | `string` | Yes | | Name |
-| `encryption` | `string` | No | | Encryption for aws_s3_bucket_server_side_encryption_configuration |
+| Variable      | Type     | Required | Default | Description                                                       |
+| ------------- | -------- | -------- | ------- | ----------------------------------------------------------------- |
+| `bucket_name` | `string` | Yes      |         | Name                                                              |
+| `encryption`  | `string` | No       |         | Encryption for aws_s3_bucket_server_side_encryption_configuration |
 ```
 
 Missing: secure default for encryption, validation rule, Sensitive column. Leaks resource type into interface contract.

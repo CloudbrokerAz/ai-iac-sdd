@@ -17,15 +17,17 @@ bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<s
 
 ## E2E Overrides
 
+Resolve `$PROMPT_FILE` from `$ARGUMENTS` (the prompt filename passed to this skill).
+
 These overrides replace interactive prompts with test defaults:
 
-| Override        | Behavior                                                       |
-| --------------- | -------------------------------------------------------------- |
-| Requirements    | Read from `.claude/skills/tf-e2e-tester/prompts/<prompt-file>` |
-| AskUserQuestion | Use test defaults, do not prompt                               |
-| Approval gates  | Auto-approve, do not wait                                      |
-| Destroy sandbox | Always yes                                                     |
-| Create PR       | No, test artifacts stay on branch                              |
+| Override        | Behavior                                                                    |
+| --------------- | --------------------------------------------------------------------------- |
+| Requirements    | Read from `.claude/skills/tf-e2e-tester/prompts/$PROMPT_FILE`               |
+| AskUserQuestion | Use test defaults, do not prompt                                            |
+| Approval gates  | Auto-approve, do not wait                                                   |
+| Destroy sandbox | Always yes                                                                  |
+| Create PR       | No, test artifacts stay on branch                                           |
 
 ---
 
@@ -33,9 +35,9 @@ These overrides replace interactive prompts with test defaults:
 
 Follow `/tf-plan-v2` skill phases with these E2E-specific differences:
 
-- **Phase 1 Setup**: Read requirements from `.claude/skills/tf-e2e-tester/prompts/<prompt-file>` instead of gathering from user. Create test issue with `test:e2e` label:
+- **Phase 1 Setup**: Read requirements from `.claude/skills/tf-e2e-tester/prompts/$PROMPT_FILE` instead of gathering from user. Create test issue with `test:e2e` label:
   ```bash
-  gh issue create --title "E2E Test: <prompt-file>" --label "test:e2e" --body "$(cat .claude/skills/tf-e2e-tester/prompts/<prompt-file>)"
+  gh issue create --title "E2E Test: $PROMPT_FILE" --label "test:e2e" --body "$(cat .claude/skills/tf-e2e-tester/prompts/$PROMPT_FILE)"
   ```
 - **Phase 2 Design**: sdd-design agent produces `design.md` using test defaults for any decisions; do not use `AskUserQuestion`
 - **Phase 3 Summary**: Do NOT add `agent:awaiting-review` label. Do NOT stop for approval. Proceed directly to implementation.

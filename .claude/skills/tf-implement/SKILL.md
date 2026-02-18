@@ -33,7 +33,7 @@ Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.s
 
 12. Run all in parallel: `terraform test`, `terraform validate`, `terraform fmt -check -recursive`, `trivy config .`, `terraform-docs markdown . > README.md`.
 13. Fix failures iteratively (max 3 rounds). Run `terraform fmt -recursive` for format issues.
-14. Write validation report to `specs/{FEATURE}/reports/` using `tf-report-template` format.
+14. Write validation report to `specs/{FEATURE}/reports/` by reading the `tf-report-template` skill inline and applying its format (this is not a subagent dispatch — write the report directly).
 15. Checkpoint commit, push branch, create PR linking to `$ISSUE_NUMBER`.
 
 ## Done
