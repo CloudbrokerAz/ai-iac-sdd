@@ -35,3 +35,8 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Workflow rearch and review documents
+sdd-v2-tasks.json
+terraform-sdd-v2-implementation-guide.md
+terraform-sdd-v2.md
