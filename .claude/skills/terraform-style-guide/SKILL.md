@@ -1,6 +1,8 @@
 ---
 name: terraform-style-guide
 description: Generate Terraform HCL code following HashiCorp's official style conventions and best practices. Use when writing, reviewing, or generating Terraform configurations.
+user-invocable: true
+argument-hint: "No arguments — reference guide for Terraform code style conventions"
 ---
 
 # Terraform Style Guide

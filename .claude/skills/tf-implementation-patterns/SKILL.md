@@ -1,6 +1,8 @@
 ---
 name: tf-implementation-patterns
 description: Common Terraform resource authoring patterns for AWS infrastructure. VPC, IAM, compute, storage, database, and module design patterns using raw resources with secure defaults. Use when implementing AWS resources in Terraform modules or looking for resource authoring patterns.
+user-invocable: true
+argument-hint: "No arguments — reference guide for AWS resource authoring patterns"
 ---
 
 # Terraform Implementation Patterns

@@ -36,7 +36,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# Workflow rearch and review documents
-sdd-v2-tasks.json
-terraform-sdd-v2-implementation-guide.md
-terraform-sdd-v2.md
+# ignore notes-during-refactoring folder
+notes-during-refactoring/
+
+# OS files
+.DS_Store

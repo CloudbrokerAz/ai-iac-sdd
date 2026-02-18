@@ -1,6 +1,8 @@
 ---
 name: tf-architecture-patterns
 description: Terraform module design patterns, resource composition conventions, and project structure standards. Use when designing module structure, choosing resource composition patterns, or setting up project layout for AWS Terraform modules.
+user-invocable: true
+argument-hint: "No arguments — reference guide for module architecture patterns"
 ---
 
 # Terraform Architecture Patterns

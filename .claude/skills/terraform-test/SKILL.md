@@ -1,6 +1,8 @@
 ---
 name: terraform-test
 description: Comprehensive guide for writing and running Terraform tests. Use when creating test files (.tftest.hcl), writing test scenarios with run blocks, validating infrastructure behavior, mocking providers, and troubleshooting test execution.
+user-invocable: true
+argument-hint: "No arguments — reference guide for Terraform test patterns"
 ---
 
 # Terraform Test
