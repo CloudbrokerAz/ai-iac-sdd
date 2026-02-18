@@ -1,7 +1,7 @@
 ---
 name: tf-test-writer
 description: Convert design.md test scenarios into .tftest.hcl files for TDD workflow. Reads Section 5 of the design document and generates test files that map 1:1 from design assertions to HCL assert blocks.
-model: sonnet
+model: opus
 color: green
 skills:
   - terraform-test
@@ -39,6 +39,7 @@ Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files. Test
 ### tests/basic.tftest.hcl
 
 Tests the module with minimal inputs (only required variables). Validates:
+
 - Secure defaults are applied (encryption enabled, public access blocked, etc.)
 - Optional features are disabled by default
 - Core outputs are present and well-formed
@@ -64,6 +65,7 @@ run "test_default_encryption" {
 ### tests/complete.tftest.hcl
 
 Tests the module with all features enabled. Validates:
+
 - Every optional feature activates correctly
 - Cross-variable interactions produce expected results
 - All outputs are populated with expected values
@@ -140,7 +142,7 @@ run "test_invalid_environment_rejected" {
 - **No invented tests**: Only generate what the design specifies. If a scenario is not in Section 5, do not create a test for it.
 - **No invented variable values**: Use the exact values specified in the design scenarios. If a scenario says `name = "my-bucket"`, use `"my-bucket"`, not `"test-bucket"`.
 - **File organization matches convention**: basic, complete, and validation -- three files, no more, no fewer.
-- **snake_case for all run block names**: Convert scenario names to snake_case, prefixed with `test_` (e.g., "Default Encryption" becomes `test_default_encryption`).
+- **snake_case for all run block names**: Convert scenario names to snake*case, prefixed with `test*`(e.g., "Default Encryption" becomes`test_default_encryption`).
 - **error_message in every assert block**: Must be descriptive and specific to the condition being tested, not generic.
 - **expect_failures for validation**: Validation run blocks use `expect_failures = [var.variable_name]` and contain NO assert blocks.
 - **Security assertions in basic.tftest.hcl**: The basic test file must verify that secure defaults are enforced with minimal inputs. This is non-negotiable.

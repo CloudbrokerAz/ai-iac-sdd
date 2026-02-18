@@ -154,7 +154,7 @@ These rules apply to all AWS modules. Non-AWS providers MUST add equivalent rule
 | Control | Requirement |
 |---------|-------------|
 | Encryption at rest | Enabled by default. MUST NOT be disableable without an explicit variable. |
-| Encryption in transit | Enforced via resource policy (e.g., `aws:SecureTransport` deny). |
+| Encryption in transit | Enforced via resource policy or platform default. Document which applies and cite evidence. |
 | Public access | Blocked by default. S3: all four public access block flags `true`. |
 | Security Groups | Deny all by default. Allow only specific required ports and sources. |
 | IAM roles | Specific resource ARNs. No wildcards (`*`) unless unavoidable with documented justification. |

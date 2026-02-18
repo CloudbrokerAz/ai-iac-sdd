@@ -89,9 +89,9 @@ It is not repeated anywhere else in any artifact.}
 ```
 
 **Assertions**:
-- {security assertion: encryption enabled by default}
-- {security assertion: public access blocked by default}
-- {functional assertion: core resource created}
+- {security assertion: assert the enforced value, not just resource existence}
+- {security assertion: assert the configuration content of access controls}
+- {functional assertion: core resource created with expected attributes}
 - ...
 
 ### Scenario: Full Features (complete)
@@ -106,9 +106,9 @@ It is not repeated anywhere else in any artifact.}
 ```
 
 **Assertions**:
-- {all optional resources created}
+- {all optional resources created with expected configuration}
 - {all outputs populated}
-- {security assertions still hold}
+- {security assertions still hold with all features on}
 - ...
 
 ### Scenario: Validation Errors
@@ -118,6 +118,11 @@ It is not repeated anywhere else in any artifact.}
 **Expect error cases**:
 - {input}: {value} -> {expected error message substring}
 - ...
+
+{Rules:
+- For security-enforcing resources (policies, encryption, access controls), assert the configuration content, not just existence
+- Every assertion becomes exactly one assert block in .tftest.hcl
+- Every security control from Section 4 must have at least one corresponding assertion here}
 
 ---
 

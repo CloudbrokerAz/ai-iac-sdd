@@ -63,7 +63,9 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Use descriptive names for multiple resources of the same type (e.g., `public`, `private`)
    - **Every resource selection MUST reference research findings** — cite which research question/finding justified the choice
    - Provider version MUST be derived from research findings, not guessed — use `>=` constraints per constitution
-   - **Architectural Decisions** use the format: `**{Decision title}**: {Choice}. *Rationale*: {Why, with research citation}. *Rejected*: {Alternatives and why not}.`
+   - **Architectural Decisions** use the format: `**{Decision title}**: {Choice}. *Rationale*: {Why}. *Source*: {provider doc ID, AWS documentation URL, or provider version}. *Rejected*: {Alternatives and why not}.`
+   - **Key Configuration** in the Resource Inventory must include implementation-critical details discovered during research (required empty blocks, ordering dependencies, deprecated arguments, API quirks)
+   - If a resource is unconditional (no toggle variable) and similar modules commonly make it optional, document why in Architectural Decisions
    - Follow `tf-architecture-patterns` for module composition, conditional creation, and policy patterns
 
    ### Section 4 — Security Controls
@@ -112,6 +114,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Every variable in §2 has Type + Description filled
    - Every resource in §3 has a Logical Name and Key Configuration
    - Every security control in §4 has a CIS or Well-Architected reference (or explicit N/A justification)
+   - Every security control row in §4 maps to at least one specific assertion in §5 (not just resource existence -- assert the enforced configuration value)
    - Every test scenario in §5 has >= 2 assertions
    - Implementation checklist in §6 has 4-8 items
    - No section references another section by line number (template rule)
@@ -169,6 +172,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 ### Cross-Cutting
 
 - Cross-reference constitution §2.1 (file layout), §3 (security), §3.3 (tags) during design
+- If research findings contradict a specific constitution rule, add a `[CONSTITUTION DEVIATION]` entry in §7 with: the rule number, what the research found, and why the deviation is justified
 - Maximum 3 `[NEEDS CLARIFICATION]` markers total — prefer informed assumptions with documented rationale
 - Naming consistency: resource and variable names must be canonical throughout the document
 
