@@ -1,223 +1,41 @@
 ---
 name: tf-implement
-description: TDD implementation orchestrator for Terraform modules. Writes tests first from design.md, then implements module code phase-by-phase. Can run standalone from an existing design.md or as Phase 3 of tf-plan-v2.
+description: SDD v2 Phases 3-4. TDD implementation and validation from an existing design.md. Writes tests first, builds module, validates, creates PR.
 user-invokable: true
 argument-hint: "[feature-name] - Implement from existing specs/{feature}/design.md"
 ---
 
-# TDD Implementation Orchestrator
+# SDD v2 — Implement
 
-**Context management**: Follow the 5 rules in AGENTS.md `## Context Management`.
+Builds and validates a Terraform module from `specs/{FEATURE}/design.md` using TDD.
 
-**Expected outputs**: See tf-plan-v2 SKILL.md Expected Output Files table for the full mapping. This skill produces: `tests/*.tftest.hcl`, `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf`, `examples/basic/`, `examples/complete/`.
+Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>"`.
+Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.sh --dir . --prefix feat "$DESCRIPTION"`.
 
-## Workflow
+## Prerequisites
 
-Execute phases sequentially. Post progress to GH issue before/after each phase. Checkpoint commit after each phase.
+1. Resolve `$FEATURE` from `$ARGUMENTS` or current git branch name.
+2. Run `bash .foundations/scripts/bash/validate-env.sh --json`. Stop if `gate_passed=false`.
+3. Verify `specs/{FEATURE}/design.md` exists via Glob. Stop if missing — tell user to run `/tf-plan-v2` first.
+4. Find `$ISSUE_NUMBER` from `$ARGUMENTS` or `gh issue list --search "$FEATURE"`.
+5. Run `terraform init -backend=false`.
 
-**Progress updates**: Post progress using `post-issue-progress.sh` (see tf-plan-v2 SKILL.md for the call signature template).
+## Phase 3: Build + Test
 
----
+6. Launch `tf-test-writer` agent with FEATURE path. Verify `tests/*.tftest.hcl` exist via Glob.
+7. Run `terraform test` to establish red TDD baseline. Checkpoint commit.
+8. Extract checklist items from design.md Section 6 via Grep.
+9. For each checklist item, launch `tf-task-executor` agent with FEATURE path and item description. Use concurrent subagents for independent items.
+10. After each item: run `terraform validate` and `terraform test`. Checkpoint commit.
+11. After all items: run `terraform test`. Fix and retry up to 3 times if failures remain.
 
-### Phase 1 — Prerequisites
+## Phase 4: Validate
 
-1. Resolve feature directory:
-   - If `$ARGUMENTS` contains a feature name, use it: `FEATURE="$ARGUMENTS"`
-   - Otherwise, derive from current branch: `FEATURE=$(git rev-parse --abbrev-ref HEAD)`
-2. Run environment validation:
-   ```
-   bash .foundations/scripts/bash/validate-env.sh --json
-   ```
-   STOP if any gate fails — report which gates failed and exit.
-3. Get issue number:
-   - If `$ARGUMENTS` includes an issue number, use it.
-   - Otherwise, search GitHub: `gh issue list --search "FEATURE" --json number --jq '.[0].number'`
-4. Verify `specs/{FEATURE}/design.md` exists:
-   - Use Glob: `specs/{FEATURE}/design.md`
-   - If missing: **STOP** — display: `"design.md not found for {FEATURE}. Run /tf-plan-v2 first or create design.md manually."`
-5. Post progress: implementation started.
+12. Run all in parallel: `terraform test`, `terraform validate`, `terraform fmt -check -recursive`, `trivy config .`, `terraform-docs markdown . > README.md`.
+13. Fix failures iteratively (max 3 rounds). Run `terraform fmt -recursive` for format issues.
+14. Write validation report to `specs/{FEATURE}/reports/` using `tf-report-template` format.
+15. Checkpoint commit, push branch, create PR linking to `$ISSUE_NUMBER`.
 
----
+## Done
 
-### Phase 2 — Write Tests First (TDD)
-
-This is the core TDD step: write all test files BEFORE any module code exists.
-
-1. Initialize the root module so that `terraform test` and `terraform validate` work:
-   ```
-   terraform init -backend=false
-   ```
-   This downloads provider plugins without configuring a backend (no state needed for plan-only tests).
-
-2. Launch `tf-test-writer` agent with FEATURE path:
-   ```
-   Task agent: tf-test-writer
-   Arguments: FEATURE path — specs/{FEATURE}/design.md
-   ```
-   The agent reads design.md Section 5 (Test Scenarios) and writes `.tftest.hcl` files.
-
-3. Verify test files exist via Glob — do NOT read them:
-   - `tests/basic.tftest.hcl`
-   - `tests/complete.tftest.hcl`
-   - `tests/validation.tftest.hcl`
-
-   If any expected test file is missing, report which files are missing and STOP.
-
-4. Run `terraform test` — expect ALL failures (no module code exists yet):
-   ```
-   terraform test
-   ```
-   This establishes the "red" TDD baseline. Capture the pass/fail count but do NOT read full output into context. Use Grep on output for the summary line.
-
-5. Checkpoint commit:
-   ```
-   git add tests/
-   git commit -m "feat({FEATURE}): add test files from design"
-   ```
-
-6. Post progress: tests written (TDD baseline).
-
----
-
-### Phase 3 — Implement Module Code
-
-1. Extract checklist items from design.md Section 6 (Implementation Checklist):
-   ```
-   Grep for lines matching "^- \[ \]" or "^[0-9]+\." in specs/{FEATURE}/design.md
-   ```
-   Do NOT read the full file — use Grep to extract only the checklist lines.
-
-2. For each checklist item:
-   a. Launch `tf-task-executor` agent:
-      ```
-      Task agent: tf-task-executor
-      Arguments: FEATURE path + checklist item description (one-line summary)
-      ```
-   b. Verify new/modified `.tf` files exist via Glob:
-      - `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf`
-   c. Run `terraform validate` — if errors, fix inline and re-validate.
-   d. Run `terraform test` — report pass/fail count (failures expected early in TDD).
-   e. Checkpoint commit:
-      ```
-      git add *.tf modules/ tests/
-      git commit -m "feat({FEATURE}): implement {checklist-item-summary}"
-      ```
-
-3. **Parallel dispatch**: When multiple checklist items are INDEPENDENT (no shared resource dependencies), launch their `tf-task-executor` agents as **parallel foreground Task calls in a single message**. Do NOT use `run_in_background`.
-
-4. After ALL checklist items complete, run final test suite:
-   ```
-   terraform test
-   ```
-   - If all tests pass: proceed to Phase 4.
-   - If failures remain: fix module code, re-run `terraform test`. Maximum 3 fix iterations.
-   - If still failing after 3 iterations: report remaining failures and STOP.
-
-5. Post progress: implementation complete.
-
----
-
-### Phase 4 — Write Examples
-
-1. Create `examples/basic/main.tf`:
-   - Minimal usage with only required variables
-   - Provider configuration block
-   - Module source using relative path: `source = "../../"`
-   - Reference design.md Interface Contract (Section 1) for required variables — use Grep, do NOT read the full file.
-
-2. Create `examples/complete/main.tf`:
-   - All features enabled, all optional variables set
-   - Provider configuration block
-   - Module source using relative path: `source = "../../"`
-   - Demonstrates every optional variable and feature toggle from design.md Interface Contract.
-
-3. Both examples need `versions.tf` with provider requirements:
-   ```hcl
-   terraform {
-     required_version = ">= 1.0"
-     required_providers {
-       aws = {
-         source  = "hashicorp/aws"
-         version = ">= 5.0"
-       }
-     }
-   }
-   ```
-
-4. Initialize and validate each example directory:
-   ```
-   terraform -chdir=examples/basic init -backend=false
-   terraform -chdir=examples/basic validate
-   terraform -chdir=examples/complete init -backend=false
-   terraform -chdir=examples/complete validate
-   ```
-   Each example directory needs its own `terraform init` to download provider plugins.
-   Fix any validation errors before proceeding.
-
-5. Checkpoint commit:
-   ```
-   git add examples/
-   git commit -m "feat({FEATURE}): add examples"
-   ```
-
----
-
-### Phase 5 — Final Check + Handoff
-
-1. Re-initialize the root module to pick up any new providers or modules added during implementation:
-   ```
-   terraform init -backend=false
-   ```
-
-2. Run formatting fix (apply, not just check):
-   ```
-   terraform fmt -recursive
-   ```
-
-3. Run validation:
-   ```
-   terraform validate
-   ```
-
-4. Run full test suite — final confirmation:
-   ```
-   terraform test
-   ```
-   All tests MUST pass. If any fail, fix and re-run (max 2 iterations).
-
-5. **Standalone mode** (invoked directly via `/tf-implement`, NOT by `tf-plan-v2`):
-   - Run remaining validation checks that Phase 4 of tf-plan-v2 would handle:
-     ```
-     trivy config .
-     terraform-docs markdown . > README.md
-     ```
-   - Run `code-quality-judge` agent with FEATURE path. Verify report via Glob — do NOT read it. Grep for `Critical` — flag if found.
-   - Create PR:
-     ```
-     git push -u origin HEAD
-     gh pr create --title "feat({FEATURE}): Terraform module implementation" --body "..."
-     ```
-   - Post completion to issue with PR link.
-
-6. **Delegated mode** (invoked by `tf-plan-v2` as Phase 3):
-   - Do NOT run trivy, terraform-docs, quality review, or create PR.
-   - Return control to tf-plan-v2 — Phase 4 validation is handled by the parent orchestrator.
-
-7. Checkpoint commit:
-   ```
-   git add -A
-   git commit -m "feat({FEATURE}): implementation complete"
-   ```
-
-8. Post progress: implementation complete.
-
----
-
-## Completion Message
-
-```
-> Implementation complete. {N}/{N} tests passing.
-> Module files: main.tf, variables.tf, outputs.tf, versions.tf
-> Tests: tests/basic.tftest.hcl, tests/complete.tftest.hcl, tests/validation.tftest.hcl
-> Examples: examples/basic/, examples/complete/
-```
+Report: test pass/fail, validation status, PR link.
