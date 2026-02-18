@@ -144,14 +144,16 @@ if ! git commit -m "$COMMIT_MSG"; then
     exit 1
 fi
 
-# --- Push ---
-if ! git push; then
-    if $JSON_MODE; then
-        printf '{"committed":true,"pushed":false,"reason":"push_failed","message":"%s"}\n' "$COMMIT_MSG"
-    elif ! $QUIET_MODE; then
-        echo "ERROR: git push failed. Commit was created locally: $COMMIT_MSG" >&2
+# --- Push (try plain push first, fall back to setting upstream) ---
+if ! git push 2>/dev/null; then
+    if ! git push -u origin HEAD 2>/dev/null; then
+        if $JSON_MODE; then
+            printf '{"committed":true,"pushed":false,"reason":"push_failed","message":"%s"}\n' "$COMMIT_MSG"
+        elif ! $QUIET_MODE; then
+            echo "ERROR: git push failed. Commit was created locally: $COMMIT_MSG" >&2
+        fi
+        exit 1
     fi
-    exit 1
 fi
 
 # --- Success ---

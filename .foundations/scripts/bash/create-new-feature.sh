@@ -315,6 +315,10 @@ if [ "$HAS_GIT" = true ]; then
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
     >&2 echo "[specify] Creating feature branch '$BRANCH_NAME' from '$CURRENT_BRANCH'"
     git checkout -b "$BRANCH_NAME"
+    # Push with -u to set upstream so checkpoint-commit.sh can `git push` without errors
+    if git remote get-url origin &>/dev/null; then
+        git push -u origin "$BRANCH_NAME" 2>&1 | sed 's/^/[specify] /' >&2 || >&2 echo "[specify] Warning: initial push failed — will retry on first checkpoint commit"
+    fi
 else
     >&2 echo "[specify] Warning: Git repository not detected; skipped branch creation for $BRANCH_NAME"
 fi
