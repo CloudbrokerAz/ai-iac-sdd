@@ -955,9 +955,38 @@
       },
       "remaining_waves": {
         "wave_2": "H5 (aws-security-advisor MCP tools), H6 (wire agents into Phase 4), H7 (compound learning), + remaining MEDIUM findings",
-        "wave_3": "Speed optimizations (fast path, tier-based parallelism, model downgrades, redundant run elimination)",
+        "wave_3": "Speed optimizations (fast path, tier-based parallelism, redundant run elimination)",
         "wave_4": "Polish (cosmetic cross-refs, v1 naming, devcontainer cleanup)"
       }
+    },
+    {
+      "timestamp": "2026-02-18T15:00",
+      "action": "DESIGN CORRECTIONS — user review challenged 3 decisions, all reverted/fixed",
+      "user_feedback": [
+        "code-quality-judge doesn't need validate-env.sh — it's a code reviewer, not a deployer",
+        "Research should stay in-memory per original v2 design — v1 data showed disk persistence caused terminology drift",
+        "Error handling in tf-plan-v2 is too verbose — opus can figure it out",
+        "All subagents must be opus — never downgrade",
+        "tf-plan-v2 vs tf-implement split is valid (standalone vs delegated mode)"
+      ],
+      "changes_applied": {
+        "research_reverted_to_in_memory": {
+          "files_changed": ["sdd-research.md", "sdd-design.md", "AGENTS.md", "tf-plan-v2/SKILL.md"],
+          "what": "Reverted research persistence to in-memory. Research agents return ~500 tokens to orchestrator. Orchestrator passes summary to design agent via $ARGUMENTS. No disk writes.",
+          "data_justification": "v1 evidence: 3 MEDIUM findings from terminology drift when research persisted to disk. 4 agents x 500 tokens = ~2000 tokens fits trivially in orchestrator context."
+        },
+        "code_quality_judge_simplified": {
+          "files_changed": ["code-quality-judge.md"],
+          "what": "Removed validate-env.sh call. Agent is a code reviewer — gets FEATURE from $ARGUMENTS, scopes .tf files via git diff."
+        },
+        "tf_plan_v2_trimmed": {
+          "files_changed": ["tf-plan-v2/SKILL.md"],
+          "what": "Removed verbose error handling, trimmed branch creation, compressed taxonomy/gap/clarification steps, removed redundant Handle responses blocks.",
+          "line_reduction": "414 → 298 lines (28% reduction)"
+        },
+        "model_policy": "ALL subagents opus. No exceptions. Speed optimization via model downgrade is off the table."
+      },
+      "updated_wave_3": "Removed 'downgrade research to sonnet' from speed optimizations. Remaining: fast path, tier-based parallelism, redundant run elimination."
     }
   ]
 }

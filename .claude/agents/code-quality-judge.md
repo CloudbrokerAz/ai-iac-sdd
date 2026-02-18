@@ -22,7 +22,7 @@ Assess Terraform module code across 6 weighted dimensions using the Agent-as-a-J
 
 ## Workflow
 
-1. **Initialize**: Run `.foundations/scripts/bash/check-prerequisites.sh --json --require-plan`, parse FEATURE_DIR/IMPL_PLAN. Then scope .tf files to the current feature: run `git diff --name-only main...HEAD -- '*.tf'` to find .tf files modified on this branch. If no feature-specific .tf files exist, write a report stating "No implementation code to evaluate — planning phase only" with N/A scores and exit. Do NOT evaluate .tf files from previous features.
+1. **Scope**: Identify .tf files to evaluate using the FEATURE path from `$ARGUMENTS` and `git diff --name-only main...HEAD -- '*.tf'` to find .tf files modified on this branch. If no feature-specific .tf files exist, write a report stating "No implementation code to evaluate — planning phase only" with N/A scores and exit. Do NOT evaluate .tf files from previous features.
 2. **Load**: Read all .tf files, `design.md`, `.pre-commit-config.yaml`
 3. **Evaluate**: Review code against 6 dimensions (from skill), identify strengths/issues with file:line, assign scores 1-10
 4. **Calculate**: Overall = (D1x0.25) + (D2x0.30) + (D3x0.15) + (D4x0.10) + (D5x0.10) + (D6x0.10). If D2<5.0 -> Force "Not Production Ready"

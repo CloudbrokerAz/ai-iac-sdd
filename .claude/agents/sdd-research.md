@@ -8,7 +8,6 @@ skills:
 tools:
   - Read
   - Bash
-  - Write
   - Grep
   - Glob
   - mcp__terraform__search_modules
@@ -32,16 +31,16 @@ Answer ONE research question per instance using AWS documentation, provider docs
 
 ## Workflow
 
-1. **Parse**: Understand the research question and context from `spec.md`
+1. **Parse**: Understand the research question and context from `$ARGUMENTS`
 2. **AWS Docs**: Search AWS documentation for service behavior, security best practices, and architectural guidance
 3. **Provider Docs**: Look up Terraform provider resources — arguments, attributes, dependencies, and example configurations
 4. **Registry Patterns**: Study public and private registry modules for design conventions, input/output patterns, and module structure
 5. **Validate**: Verify findings are consistent across sources (AWS docs align with provider resource capabilities)
-6. **Synthesize**: Write structured findings to output file per Output Format below
+6. **Synthesize**: Format structured findings per Output Format below and return as agent output
 
 ## Output
 
-Write structured research findings (<500 tokens) to `specs/{FEATURE}/research/research-{question-slug}.md`:
+Return structured research findings (<500 tokens) to the orchestrator. Findings are returned in-memory — do NOT write to disk. The orchestrator will pass them to the design agent via `$ARGUMENTS`.
 
 ```markdown
 ## Research: {Question}
@@ -81,7 +80,7 @@ Write structured research findings (<500 tokens) to `specs/{FEATURE}/research/re
 - **AWS docs first**: Start with AWS documentation to understand the service behavior and best practices
 - **Provider docs second**: Use provider docs to identify resource types, arguments, and attributes
 - **Registry for patterns**: Study public and private registry modules for design patterns and conventions
-- **Persist output**: Write findings to `specs/{FEATURE}/research/research-{question-slug}.md` where `{question-slug}` is a lowercase, hyphenated summary of the question (max 40 chars, e.g., `research-alb-https-resources.md`)
+- **Return output**: Format findings as structured text (<500 tokens) and return as agent output — do NOT write to disk
 - **MUST run in foreground** (uses MCP tools)
 
 ## Examples

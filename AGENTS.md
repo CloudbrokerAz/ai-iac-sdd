@@ -22,12 +22,12 @@ See constitution Section 3.2 (`.foundations/memory/constitution.md`) for the can
 
 ## Agent Architecture
 
-Agents are subagents dispatched by orchestrator skills. Each agent has a single responsibility, reads its own inputs from disk, and writes its own outputs to disk.
+Agents are subagents dispatched by orchestrator skills. Each agent has a single responsibility. Most agents read inputs from disk and write outputs to disk; research agents return findings in-memory to the orchestrator.
 
 | Agent | Model | Purpose | Input | Output |
 |-------|-------|---------|-------|--------|
 | `sdd-design` | opus | Produce design.md from clarified requirements and research findings | Requirements + research + constitution + template | `specs/{FEATURE}/design.md` |
-| `sdd-research` | opus | Answer one specific research question using MCP tools | Feature path + research question | Research findings (passed to design agent, not persisted) |
+| `sdd-research` | opus | Answer one specific research question using MCP tools | Feature path + research question | Research findings (returned to orchestrator, not persisted) |
 | `tf-test-writer` | sonnet | Convert design.md test scenarios into `.tftest.hcl` files | `specs/{FEATURE}/design.md` Section 5 | `tests/*.tftest.hcl` |
 | `tf-task-executor` | opus | Implement one checklist item from design.md | `specs/{FEATURE}/design.md` + checklist item + existing code | Modified `.tf` files |
 | `tf-deployer` | opus | Run tests and optionally deploy to sandbox | Module code + test files | Test results + deploy status |
@@ -88,14 +88,14 @@ For GHE repositories:
 
 ### Agent Output Persistence
 
-All agents have the Write tool and are responsible for persisting their own output artifacts. The orchestrator verifies that expected output files exist after each agent dispatch.
+Most agents have the Write tool and persist their own output artifacts to disk. The orchestrator verifies that expected output files exist after each agent dispatch. **Exception**: Research agents return findings in-memory (~500 tokens each) — the orchestrator collects these and passes them to the design agent via `$ARGUMENTS`.
 
 ## Context Management
 
-1. **NEVER call TaskOutput** to read subagent results. All agents write artifacts to disk -- reading them back into the orchestrator bloats context and triggers compaction.
+1. **NEVER call TaskOutput** to read subagent results — EXCEPT for research agents, whose findings (~500 tokens each) are collected and forwarded to the design agent. All other agents write artifacts to disk.
 2. **Verify file existence with Glob** after each agent completes -- do NOT read file contents into the orchestrator.
-3. **Downstream agents read their own inputs from disk.** The orchestrator passes only the FEATURE path and a brief scope description via `$ARGUMENTS`.
-4. **Research agents: parallel foreground Task calls** (NOT `run_in_background`). Launch ALL research agents in a single message with multiple Task tool calls, then wait for all to complete before proceeding.
-5. **Minimal $ARGUMENTS**: Only pass the FEATURE path + a specific question or scope. Never inject file contents.
+3. **Downstream agents read their own inputs from disk.** The orchestrator passes the FEATURE path plus scope via `$ARGUMENTS`. For the design agent, `$ARGUMENTS` also includes research findings collected from research agents.
+4. **Research agents: parallel foreground Task calls** (NOT `run_in_background`). Launch ALL research agents in a single message with multiple Task tool calls, then collect their in-memory findings to pass to the design agent.
+5. **Minimal $ARGUMENTS**: Only pass the FEATURE path + a specific question or scope. The one exception is research findings passed to the design agent (~2000 tokens total for 4 research agents).
 
 **Remember**: Always verify with MCP tools. Security is non-negotiable.

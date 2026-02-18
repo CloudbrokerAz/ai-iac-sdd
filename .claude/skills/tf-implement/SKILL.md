@@ -43,33 +43,39 @@ Execute phases sequentially. Post progress to GH issue before/after each phase. 
 
 This is the core TDD step: write all test files BEFORE any module code exists.
 
-1. Launch `tf-test-writer` agent with FEATURE path:
+1. Initialize the root module so that `terraform test` and `terraform validate` work:
+   ```
+   terraform init -backend=false
+   ```
+   This downloads provider plugins without configuring a backend (no state needed for plan-only tests).
+
+2. Launch `tf-test-writer` agent with FEATURE path:
    ```
    Task agent: tf-test-writer
    Arguments: FEATURE path — specs/{FEATURE}/design.md
    ```
    The agent reads design.md Section 5 (Test Scenarios) and writes `.tftest.hcl` files.
 
-2. Verify test files exist via Glob — do NOT read them:
+3. Verify test files exist via Glob — do NOT read them:
    - `tests/basic.tftest.hcl`
    - `tests/complete.tftest.hcl`
    - `tests/validation.tftest.hcl`
 
    If any expected test file is missing, report which files are missing and STOP.
 
-3. Run `terraform test` — expect ALL failures (no module code exists yet):
+4. Run `terraform test` — expect ALL failures (no module code exists yet):
    ```
    terraform test
    ```
    This establishes the "red" TDD baseline. Capture the pass/fail count but do NOT read full output into context. Use Grep on output for the summary line.
 
-4. Checkpoint commit:
+5. Checkpoint commit:
    ```
    git add tests/
    git commit -m "feat({FEATURE}): add test files from design"
    ```
 
-5. Post progress: tests written (TDD baseline).
+6. Post progress: tests written (TDD baseline).
 
 ---
 
@@ -138,11 +144,14 @@ This is the core TDD step: write all test files BEFORE any module code exists.
    }
    ```
 
-4. Validate each example:
+4. Initialize and validate each example directory:
    ```
-   cd examples/basic && terraform init && terraform validate
-   cd examples/complete && terraform init && terraform validate
+   terraform -chdir=examples/basic init -backend=false
+   terraform -chdir=examples/basic validate
+   terraform -chdir=examples/complete init -backend=false
+   terraform -chdir=examples/complete validate
    ```
+   Each example directory needs its own `terraform init` to download provider plugins.
    Fix any validation errors before proceeding.
 
 5. Checkpoint commit:
@@ -155,23 +164,28 @@ This is the core TDD step: write all test files BEFORE any module code exists.
 
 ### Phase 5 — Final Check + Handoff
 
-1. Run formatting fix (apply, not just check):
+1. Re-initialize the root module to pick up any new providers or modules added during implementation:
+   ```
+   terraform init -backend=false
+   ```
+
+2. Run formatting fix (apply, not just check):
    ```
    terraform fmt -recursive
    ```
 
-2. Run validation:
+3. Run validation:
    ```
    terraform validate
    ```
 
-3. Run full test suite — final confirmation:
+4. Run full test suite — final confirmation:
    ```
    terraform test
    ```
    All tests MUST pass. If any fail, fix and re-run (max 2 iterations).
 
-4. **Standalone mode** (invoked directly via `/tf-implement`, NOT by `tf-plan-v2`):
+5. **Standalone mode** (invoked directly via `/tf-implement`, NOT by `tf-plan-v2`):
    - Run remaining validation checks that Phase 4 of tf-plan-v2 would handle:
      ```
      trivy config .
@@ -185,17 +199,17 @@ This is the core TDD step: write all test files BEFORE any module code exists.
      ```
    - Post completion to issue with PR link.
 
-5. **Delegated mode** (invoked by `tf-plan-v2` as Phase 3):
+6. **Delegated mode** (invoked by `tf-plan-v2` as Phase 3):
    - Do NOT run trivy, terraform-docs, quality review, or create PR.
    - Return control to tf-plan-v2 — Phase 4 validation is handled by the parent orchestrator.
 
-6. Checkpoint commit:
+7. Checkpoint commit:
    ```
    git add -A
    git commit -m "feat({FEATURE}): implementation complete"
    ```
 
-7. Post progress: implementation complete.
+8. Post progress: implementation complete.
 
 ---
 

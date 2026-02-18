@@ -30,7 +30,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 2. **Parse Input**: Extract from `$ARGUMENTS`:
    - The FEATURE path (e.g., `specs/vpc/`)
    - Clarified requirements from Phase 1 (user-confirmed functional and non-functional requirements)
-   - Research findings from Phase 1 (resource details, provider versions, security considerations, architectural decisions — these are passed inline, NOT as file references)
+   - Research findings from Phase 1 (MCP research results — provider documentation, AWS best practices, resource behavior, and registry patterns that MUST inform the design). Every resource selection in Section 3 must reference these findings.
 
 3. **Design**: Populate ALL 7 sections of the design template. Each section has specific rules:
 
