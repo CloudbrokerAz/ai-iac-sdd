@@ -1,8 +1,6 @@
 ---
 name: tf-task-executor
-description: |
-  Execute individual implementation checklist items from design.md with Terraform module code.
-  Invoked by tf-implement orchestrator with checklist item context from specs/{FEATURE}/design.md.
+description: Execute individual implementation checklist items from design.md with Terraform module code. Invoked by tf-implement orchestrator with checklist item context from specs/{FEATURE}/design.md.
 model: opus
 color: orange
 skills:
@@ -59,6 +57,7 @@ Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 
 ## Examples
 
 **Good implementation** (raw resources with secure defaults):
+
 ```hcl
 resource "aws_s3_bucket" "this" {
   count = var.create ? 1 : 0
@@ -94,14 +93,17 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 ```
 
 **Bad implementation** (hardcoded values, no conditionals, no security):
+
 ```hcl
 resource "aws_s3_bucket" "this" {
   bucket = "my-bucket-name"
 }
 ```
+
 Missing: conditional creation, variable-driven configuration, encryption, public access block, tags.
 
 **Good completion report**:
+
 ```
 Checklist item complete: "Implement core S3 bucket resources"
 Files modified: main.tf, variables.tf, outputs.tf
@@ -111,9 +113,11 @@ Checklist updated: [x] in design.md Section 6
 ```
 
 **Bad completion report**:
+
 ```
 Task complete.
 ```
+
 Missing checklist item description, file list, validation status, and test results.
 
 ## Context
