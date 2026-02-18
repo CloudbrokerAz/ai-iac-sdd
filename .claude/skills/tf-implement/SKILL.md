@@ -27,7 +27,7 @@ Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.s
 8. Extract checklist items from design.md Section 6 via Grep.
 9. For each checklist item, launch `tf-task-executor` agent with FEATURE path and item description. Use concurrent subagents for independent items.
 10. After each item: run `terraform validate` and `terraform test`. Checkpoint commit.
-11. After all items: run `terraform test`. Fix and retry up to 3 times if failures remain.
+11. After all items: run `terraform test`. If failures remain, re-launch `tf-test-writer` agent with the error output and any data sources reported by task executors as context.
 
 ## Phase 4: Validate
 

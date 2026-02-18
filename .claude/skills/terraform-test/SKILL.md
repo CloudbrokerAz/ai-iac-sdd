@@ -237,6 +237,8 @@ run "test_development_configuration" {
 
 Test security-critical configurations: encryption at rest, public access blocking, logging enablement.
 
+**Important**: Many AWS provider nested blocks (SSE `rule`, lifecycle `transition`, CORS `cors_rule`, security group `ingress`/`egress`) are `set` types, not lists. Sets cannot be indexed with `[0]`. Use `one()` to extract the single element from a set-typed block.
+
 ```hcl
 run "test_encryption_enabled" {
   command = plan
@@ -245,8 +247,9 @@ run "test_encryption_enabled" {
     name = "secure-bucket"
   }
 
+  # SSE rule is a set — use one() not [0]
   assert {
-    condition     = aws_s3_bucket_server_side_encryption_configuration.main.rule[0].apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"
+    condition     = one(aws_s3_bucket_server_side_encryption_configuration.main.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"
     error_message = "S3 bucket must use KMS encryption"
   }
 }
@@ -551,6 +554,48 @@ terraform test -verbose                           # Verbose output
 terraform test -test-directory=integration-tests  # Specific directory
 terraform test -filter=test_vpc_configuration     # Filter by name
 terraform test -no-cleanup                        # Skip cleanup (debug)
+```
+
+## Plan-Mode Limitations
+
+When using `command = plan`, be aware of these constraints:
+
+1. **Output values are unknown**: Computed outputs (those depending on provider-assigned attributes like ARNs, endpoints, IDs) are unknown during plan. Assert on resource attributes directly, not on `output.*` values.
+
+```hcl
+# BAD — output.website_endpoint is unknown during plan
+assert {
+  condition     = output.website_endpoint != null
+  error_message = "Website endpoint must not be null"
+}
+
+# GOOD — assert on the resource attribute instead
+assert {
+  condition     = length(aws_s3_bucket_website_configuration.this[*]) == 1
+  error_message = "Website configuration must be created when enabled"
+}
+```
+
+2. **Set-typed blocks cannot be indexed**: Many AWS provider nested blocks (`rule`, `transition`, `cors_rule`, `ingress`, `egress`) are `set` types. Use `one()` for single-element sets.
+
+```hcl
+# BAD — rule is a set, not a list
+condition = aws_s3_bucket_server_side_encryption_configuration.this.rule[0].apply_server_side_encryption_by_default[0].sse_algorithm == "AES256"
+
+# GOOD — use one() for set-typed blocks
+condition = one(aws_s3_bucket_server_side_encryption_configuration.this.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "AES256"
+```
+
+3. **Data sources need mocking**: When testing against the root module (no `module {}` block), data sources execute during plan. Add `mock_data` blocks for data sources the module uses.
+
+```hcl
+mock_provider "aws" {
+  mock_data "aws_iam_policy_document" {
+    defaults = {
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}"
+    }
+  }
+}
 ```
 
 ## Best Practices

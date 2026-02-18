@@ -35,7 +35,7 @@ Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 
 6. **Validate**: Run `terraform validate` to catch syntax and reference errors.
 7. **Test**: Run `terraform test` — report pass/fail counts. Failures are expected early in the TDD cycle; report which tests pass and which still fail so progress is visible.
 8. **Update**: Mark the completed checklist item as `[x]` in `specs/{FEATURE}/design.md` Section 6 (Implementation Checklist).
-9. **Report**: Return completion status with files modified, validation results, and test results (pass count / total count).
+9. **Report**: Return completion status with files modified, validation results, test results (pass count / total count), and any data sources introduced (e.g., `data "aws_iam_policy_document"`) -- the orchestrator needs this to inform test-fix cycles.
 
 ## Output
 

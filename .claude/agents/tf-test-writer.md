@@ -55,8 +55,9 @@ run "test_default_encryption" {
     name = "test-basic"
   }
 
+  # SSE rule is a set — use one() not [0]
   assert {
-    condition     = aws_s3_bucket_server_side_encryption_configuration.main.rule[0].apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"
+    condition     = one(aws_s3_bucket_server_side_encryption_configuration.main.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"
     error_message = "S3 bucket must use KMS encryption by default"
   }
 }
@@ -132,8 +133,11 @@ run "test_invalid_environment_rejected" {
 
 - Every `run` block has `command = plan` unless explicitly specified otherwise in the design
 - Variable values come directly from the design.md scenario inputs -- do not invent values
-- Assert conditions reference `output.*` for outputs, `resource_type.resource_name.*` for resource attributes (e.g., `aws_s3_bucket.main.bucket`)
+- **Test against root module directly** -- do NOT use `module {}` blocks in run blocks. Tests run against the root module, so assert on `resource_type.resource_name.*` (e.g., `aws_s3_bucket.this.bucket`), not `module.*.resource_type.*`
 - For conditional resources using `count`, use index syntax: `resource_type.name[0].attribute` when enabled, `length(resource_type.name[*]) == 0` when disabled
+- **Set-typed blocks**: Many AWS provider nested blocks (`rule`, `transition`, `cors_rule`, `ingress`, `egress`) are `set` types and cannot be indexed with `[0]`. Use `one()` to extract the single element: `one(aws_s3_bucket_server_side_encryption_configuration.this.rule).apply_server_side_encryption_by_default[0].sse_algorithm`
+- **Plan-mode output limitation**: Computed outputs (ARNs, endpoints, IDs) are unknown during `command = plan`. Do NOT assert on `output.*` values. Assert on resource attributes directly instead (e.g., assert `length(aws_s3_bucket_website_configuration.this[*]) == 1` rather than `output.website_endpoint != null`)
+- **Mock data sources**: If the module uses `data` sources (e.g., `aws_iam_policy_document`, `aws_caller_identity`), add a `mock_provider` block at the top of the test file with `mock_data` defaults for each data source. Check `design.md` Section 3 for data sources in the resource inventory, and check existing `.tf` files if available
 - Security assertions (encryption, public access blocking, tags) appear in EVERY test file, not just complete -- the basic test must verify secure defaults
 - Use `expect_failures` for validation testing -- one run block per invalid input case, no assert blocks in those run blocks
 - Include a header comment in each file: `# Generated from specs/{FEATURE}/design.md Section 5`
@@ -142,11 +146,10 @@ run "test_invalid_environment_rejected" {
 - **No invented tests**: Only generate what the design specifies. If a scenario is not in Section 5, do not create a test for it.
 - **No invented variable values**: Use the exact values specified in the design scenarios. If a scenario says `name = "my-bucket"`, use `"my-bucket"`, not `"test-bucket"`.
 - **File organization matches convention**: basic, complete, and validation -- three files, no more, no fewer.
-- **snake_case for all run block names**: Convert scenario names to snake*case, prefixed with `test*`(e.g., "Default Encryption" becomes`test_default_encryption`).
+- **snake_case for all run block names**: Convert scenario names to snake_case, prefixed with `test_` (e.g., "Default Encryption" becomes `test_default_encryption`).
 - **error_message in every assert block**: Must be descriptive and specific to the condition being tested, not generic.
 - **expect_failures for validation**: Validation run blocks use `expect_failures = [var.variable_name]` and contain NO assert blocks.
 - **Security assertions in basic.tftest.hcl**: The basic test file must verify that secure defaults are enforced with minimal inputs. This is non-negotiable.
-- **Do not include mock_provider blocks** unless the design.md explicitly specifies them. Plan-only tests against the module root do not require mocks.
 
 ## Output
 
