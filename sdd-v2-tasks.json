@@ -702,6 +702,262 @@
         ".claude/skills/tf-implement/SKILL.md (245 → 209)",
         ".foundations/memory/constitution.md (778 → 736)"
       ]
+    },
+    {
+      "timestamp": "2026-02-18T14:00",
+      "action": "COMPREHENSIVE AUDIT — 5 parallel OPUS agents analyzed orchestrators, agents, v1-v2 gaps, speed/efficiency, and cross-reference consistency",
+      "audit_dimensions": [
+        "Orchestrator quality (tf-plan-v2, tf-implement)",
+        "Agent definitions (all 7 agents)",
+        "V1 vs V2 gap analysis",
+        "Speed and efficiency optimization",
+        "Cross-reference consistency"
+      ],
+      "findings_summary": {
+        "total_unique_findings": 52,
+        "by_severity": {
+          "CRITICAL": 3,
+          "HIGH": 7,
+          "MEDIUM": 18,
+          "LOW": 17,
+          "COSMETIC": 7
+        }
+      },
+      "critical_findings": [
+        {
+          "id": "C1",
+          "source": "orchestrator-audit + cross-ref-audit",
+          "title": "No `terraform init` anywhere in tf-implement",
+          "description": "tf-implement never calls `terraform init`. Every terraform test/validate call in the TDD loop will fail immediately. This is the single most impactful bug — the core value prop of v2 (TDD) cannot execute.",
+          "files_affected": [".claude/skills/tf-implement/SKILL.md"],
+          "fix": "Add `terraform init -backend=false` as first step of tf-implement Phase 2, before the TDD baseline run. Also add init for each example directory in Phase 4."
+        },
+        {
+          "id": "C2",
+          "source": "agent-audit + cross-ref-audit",
+          "title": "code-quality-judge agent is completely non-functional",
+          "description": "References two files that don't exist: (1) .foundations/scripts/bash/check-prerequisites.sh (step 1 initialization), (2) .foundations/templates/code-quality-evaluation-report.md (step 5 report generation). Agent will fail at its first step.",
+          "files_affected": [".claude/agents/code-quality-judge.md"],
+          "fix": "Replace check-prerequisites.sh with validate-env.sh --json. Either create the evaluation report template or rewrite the report step to use inline structure."
+        },
+        {
+          "id": "C3",
+          "source": "orchestrator-audit + agent-audit + v1-v2-audit",
+          "title": "Research agent output persistence contradiction",
+          "description": "sdd-research agent writes findings to specs/{FEATURE}/research/ per its own instructions. But tf-plan-v2 says 'do NOT write research files to disk' and passes findings inline to design agent. AGENTS.md says 'not persisted'. Three documents contradict each other. Design agent may never see full research findings.",
+          "files_affected": [".claude/agents/sdd-research.md", ".claude/skills/tf-plan-v2/SKILL.md"],
+          "fix": "Option A (RECOMMENDED): Let research agents write to disk (per their definition). Update tf-plan-v2 to remove 'do NOT write' instruction. Update design agent to read from specs/{FEATURE}/research/. This follows AGENTS.md context management rule #3. Option B: Remove Write tool from sdd-research and return findings inline."
+        }
+      ],
+      "high_findings": [
+        {
+          "id": "H1",
+          "title": "No feature branch creation in tf-plan-v2",
+          "description": "Constitution Section 3.1 prohibits direct commits to main. tf-plan-v2 never creates a feature branch. create-new-feature.sh exists but is never called.",
+          "fix": "Add branch creation step in Phase 1 after GitHub issue creation, or invoke create-new-feature.sh"
+        },
+        {
+          "id": "H2",
+          "title": "No terraform init before Phase 4 validation",
+          "description": "tf-plan-v2 Phase 4 runs terraform test/validate/fmt but no preceding init.",
+          "fix": "Add terraform init -backend=false as first Phase 4 step"
+        },
+        {
+          "id": "H3",
+          "title": "No error handling for gh issue create failure",
+          "description": "If gh auth fails or repo has no issues, $ISSUE_NUMBER is empty and all subsequent post-issue-progress.sh calls cascade fail silently.",
+          "fix": "Add error check after gh issue create. If fails, ask user whether to continue without issue tracking."
+        },
+        {
+          "id": "H4",
+          "title": "sdd-research references spec.md (v1 artifact)",
+          "description": "Line 35 says 'Parse from spec.md' but spec.md doesn't exist in v2. Agent should parse from $ARGUMENTS.",
+          "fix": "Change 'spec.md' to '$ARGUMENTS' in sdd-research.md"
+        },
+        {
+          "id": "H5",
+          "title": "aws-security-advisor lacks Terraform MCP tools",
+          "description": "Has AWS Knowledge MCP but no terraform provider MCP tools. Cannot verify resource capabilities against provider docs, violating MCP-First principle.",
+          "fix": "Add mcp__terraform__search_providers and mcp__terraform__get_provider_details to tool list"
+        },
+        {
+          "id": "H6",
+          "title": "aws-security-advisor and code-quality-judge never dispatched in tf-plan-v2",
+          "description": "Phase 4 runs tool-based checks but never dispatches these dedicated agents. Security review gate in Phase 2->3 references a review that never happens.",
+          "fix": "Add optional dispatch of both agents in Phase 4.1 parallel validation"
+        },
+        {
+          "id": "H7",
+          "title": "Compound learning subsystem entirely non-functional",
+          "description": "5 compound agents referenced but never created. Output directories (patterns/, pitfalls/) don't exist. Trigger mechanism disconnected from tf-implement.",
+          "fix": "Either create the 5 agents + directories, or mark compound learning as 'planned but not yet implemented' in constitution Section 12"
+        }
+      ],
+      "medium_findings_summary": "18 findings covering: parallel dispatch conflict resolution, terraform test exit code handling, Phase 1 gate has no mechanical check, Phase 3 gate doesn't verify checklist completion, research skip contradiction with constitution, no guidance for splitting large checklist items, approval gate mechanism mismatch (constitution says GH issue comment, tf-plan-v2 uses AskUserQuestion), tf-deployer doesn't persist output to disk, tf-test-writer lacks Bash for self-validation, aws-security-advisor lacks Bash for scanning, design agent arguments may bloat, tflint referenced in constitution but never run, tf-implement Section 1/2 cross-ref error, devcontainer settings whitelist 3 nonexistent scripts",
+      "speed_efficiency_recommendations": {
+        "top_3_highest_impact": [
+          {
+            "rank": 1,
+            "title": "Simple Module Fast Path",
+            "description": "Add complexity classifier at Step 1.3. Simple modules (1-3 resources) get abbreviated research (1 agent), abbreviated design, consolidated implementation (1-2 agents), skip code-quality-judge.",
+            "time_savings": "8-15 minutes for simple modules",
+            "cost_savings": "60-70% token reduction for simple modules",
+            "files_to_modify": ["tf-plan-v2/SKILL.md"]
+          },
+          {
+            "rank": 2,
+            "title": "Consolidate Checklist Items",
+            "description": "Restructure implementation checklist to 2-3 coarse items instead of 4-8. Use dependency tiers: Tier 1 (serial: scaffold+core+security), Tier 2 (parallel: feature resources), Tier 3 (serial: polish). Enables parallel execution of Tier 2 items.",
+            "time_savings": "3-5 minutes",
+            "cost_savings": "25-33% of total tokens",
+            "files_to_modify": ["sdd-design.md", "tf-implement/SKILL.md"]
+          },
+          {
+            "rank": 3,
+            "title": "Downgrade sdd-research from opus to sonnet",
+            "description": "Research agents perform structured extraction (call MCP, format output <500 tokens). Sonnet is sufficient.",
+            "time_savings": "30-60 seconds (parallel, so wall-clock is modest)",
+            "cost_savings": "~11% of total workflow cost",
+            "files_to_modify": ["sdd-research.md"]
+          }
+        ],
+        "additional_recommendations": [
+          "Eliminate redundant terraform test runs: 8-12 per workflow → 2 (save 1-2 min, 9% tokens)",
+          "Eliminate redundant terraform validate runs: 6-10 per workflow → 2 (save 30-60s)",
+          "Slim terraform-test skill for tf-test-writer: save ~3,500 tokens per invocation",
+          "Create constitution excerpt for design agent: save ~4,000 tokens",
+          "Use sonnet for trivial task executor items (scaffold, outputs): save ~15% of task-executor cost",
+          "Skip redundant Phase 4 checks already done by tf-implement: save 10-20s",
+          "Enable parallel execution of independent Tier 2 checklist items: save 2-3 min"
+        ],
+        "estimated_combined_impact": {
+          "standard_module_current": "14 agent invocations, 15-25 min, ~215K tokens",
+          "standard_module_optimized": "7-9 agent invocations, 8-15 min, ~120-140K tokens",
+          "simple_module_optimized": "4-5 agent invocations, 4-8 min, ~50-70K tokens"
+        }
+      },
+      "v1_comparison_summary": {
+        "correctly_removed": ["tf-spec-writing", "tf-task-patterns", "tf-checklist-patterns", "tf-consistency-rules", "sdd-specify", "sdd-plan-draft", "sdd-checklist", "sdd-analyze", "sdd-tasks"],
+        "correctly_ported": ["tf-domain-taxonomy", "tf-research-heuristics", "tf-architecture-patterns", "tf-implementation-patterns", "terraform-test (ELEVATED)", "terraform-style-guide", "tf-judge-criteria", "tf-compound-patterns", "tf-security-baselines", "sdd-research", "tf-deployer", "code-quality-judge", "aws-security-advisor"],
+        "v1_content_lost_that_matters": "None significant — all valuable content was absorbed into v2 agents or kept in skills",
+        "v1_naming_remnants": ["common.sh uses SPECIFY_FEATURE variable", "create-new-feature.sh uses [specify] log prefix", "sdd-research references spec.md"]
+      },
+      "cross_reference_summary": {
+        "will_break": 10,
+        "cosmetic": 7,
+        "key_broken_refs": [
+          "code-quality-judge → check-prerequisites.sh (missing)",
+          "code-quality-judge → code-quality-evaluation-report.md (missing)",
+          "5 compound agents referenced but not created",
+          "devcontainer whitelists 3 nonexistent scripts/skills",
+          "sdd-design → .foundations/memory/patterns/ (directory missing)",
+          "sdd-design → .foundations/memory/pitfalls/ (directory missing)"
+        ]
+      },
+      "recommended_fix_priority": {
+        "wave_1_blocking_bugs": [
+          "C1: Add terraform init to tf-implement",
+          "C2: Fix code-quality-judge broken references",
+          "C3: Resolve research output persistence contradiction",
+          "H1: Add feature branch creation to tf-plan-v2",
+          "H2: Add terraform init to tf-plan-v2 Phase 4",
+          "H3: Add gh issue create error handling"
+        ],
+        "wave_2_functional_gaps": [
+          "H4: Fix sdd-research spec.md reference",
+          "H5: Add Terraform MCP tools to aws-security-advisor",
+          "H6: Wire aws-security-advisor + code-quality-judge into tf-plan-v2 Phase 4",
+          "H7: Create compound learning directories (patterns/, pitfalls/) + mark agents as planned",
+          "Create code-quality-evaluation-report.md template"
+        ],
+        "wave_3_speed_optimizations": [
+          "Add simple module fast path to tf-plan-v2",
+          "Restructure implementation checklist for tier-based parallelism",
+          "Downgrade sdd-research to sonnet",
+          "Eliminate redundant terraform test/validate runs",
+          "Create terraform-test-basic skill for tf-test-writer"
+        ],
+        "wave_4_polish": [
+          "Fix all 7 COSMETIC cross-reference issues",
+          "Fix v1 naming remnants in scripts",
+          "Add tflint to Phase 4 validation",
+          "Create devcontainer settings cleanup",
+          "Update constitution Section 12 compound learning status"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T14:30",
+      "action": "WAVE 1 COMPLETE — 6 blocking bugs fixed via 4 parallel OPUS agents (grouped by file ownership to prevent conflicts)",
+      "fixes_applied": {
+        "C1_terraform_init": {
+          "status": "FIXED",
+          "file": ".claude/skills/tf-implement/SKILL.md",
+          "changes": [
+            "Added terraform init -backend=false as first step of Phase 2 (before TDD baseline)",
+            "Added terraform -chdir=examples/basic init -backend=false in Phase 4 example validation",
+            "Added terraform -chdir=examples/complete init -backend=false in Phase 4 example validation",
+            "Added terraform init -backend=false as first step of Phase 5 final validation"
+          ]
+        },
+        "C2_code_quality_judge": {
+          "status": "FIXED",
+          "files": [".claude/agents/code-quality-judge.md", ".foundations/templates/code-quality-evaluation-report.md (NEW)"],
+          "changes": [
+            "Replaced check-prerequisites.sh --json --require-plan with validate-env.sh --json",
+            "Created code-quality-evaluation-report.md template (85 lines) with 6 scoring dimensions, findings table, improvement roadmap, constitution compliance"
+          ]
+        },
+        "C3_research_persistence": {
+          "status": "FIXED",
+          "files": [".claude/agents/sdd-research.md", ".claude/agents/sdd-design.md", "AGENTS.md", ".claude/skills/tf-plan-v2/SKILL.md"],
+          "changes": [
+            "sdd-research: Fixed spec.md reference → $ARGUMENTS (also fixes H4)",
+            "sdd-design: Added Step 2 'Read Research Findings' — reads specs/{FEATURE}/research/ via Glob",
+            "AGENTS.md: Updated sdd-research output column to 'written to specs/{FEATURE}/research/'",
+            "tf-plan-v2: Replaced 'do NOT write research files' with 'agents write to specs/{FEATURE}/research/'",
+            "tf-plan-v2: Updated design agent dispatch to NOT pass research inline, reads from disk instead"
+          ]
+        },
+        "H1_feature_branch": {
+          "status": "FIXED",
+          "file": ".claude/skills/tf-plan-v2/SKILL.md",
+          "changes": [
+            "Added Step 1.5 — Feature Branch Creation using create-new-feature.sh",
+            "Handles empty $ISSUE_NUMBER case (omits --issue flag)",
+            "Captures $BRANCH_NAME and $FEATURE_DIR from script output",
+            "Renumbered subsequent Phase 1 steps (1.6-1.10)"
+          ]
+        },
+        "H2_phase4_init": {
+          "status": "FIXED",
+          "file": ".claude/skills/tf-plan-v2/SKILL.md",
+          "changes": [
+            "Added Step 4.0 — Initialize with terraform init -backend=false before parallel validation"
+          ]
+        },
+        "H3_gh_error_handling": {
+          "status": "FIXED",
+          "file": ".claude/skills/tf-plan-v2/SKILL.md",
+          "changes": [
+            "Added error handling to Step 1.4 — if gh issue create fails, AskUserQuestion with Continue/Stop",
+            "Added global note: all post-issue-progress.sh calls must check $ISSUE_NUMBER is non-empty"
+          ]
+        }
+      },
+      "bonus_fix": "H4 (sdd-research spec.md reference) was fixed as part of C3",
+      "agent_grouping": {
+        "reason": "4 of 6 fixes touched tf-plan-v2/SKILL.md — grouped into single agent to prevent edit conflicts",
+        "agent_1": "C1 → tf-implement/SKILL.md only",
+        "agent_2": "C2 → code-quality-judge.md + new template",
+        "agent_3": "C3 → sdd-research.md + sdd-design.md + AGENTS.md (NOT tf-plan-v2)",
+        "agent_4": "H1+H2+H3+C3-partial → tf-plan-v2/SKILL.md only"
+      },
+      "remaining_waves": {
+        "wave_2": "H5 (aws-security-advisor MCP tools), H6 (wire agents into Phase 4), H7 (compound learning), + remaining MEDIUM findings",
+        "wave_3": "Speed optimizations (fast path, tier-based parallelism, model downgrades, redundant run elimination)",
+        "wave_4": "Polish (cosmetic cross-refs, v1 naming, devcontainer cleanup)"
+      }
     }
   ]
 }
