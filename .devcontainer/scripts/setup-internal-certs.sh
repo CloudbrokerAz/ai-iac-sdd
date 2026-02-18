@@ -23,8 +23,11 @@ fi
 echo "=== Internal CA Certificate Setup ==="
 
 # --- Guard: check network reachability before doing anything ---
+# Use IP for the connectivity check since the hostname is internal (.local)
+# and won't resolve via DNS — /etc/hosts entries are added after this check.
+CHECK_TARGET="${INTERNAL_IP:-$INTERNAL_HOST}"
 echo -n "Checking connectivity to ${INTERNAL_HOST}:443... "
-if ! timeout 5 bash -c "echo >/dev/tcp/${INTERNAL_HOST}/443" 2>/dev/null; then
+if ! timeout 5 bash -c "echo >/dev/tcp/${CHECK_TARGET}/443" 2>/dev/null; then
     echo "unreachable"
     echo "  Skipping certificate setup — not on the internal network."
     echo "  This is safe to ignore. OTEL/Grafana will not work until you're on-network."
