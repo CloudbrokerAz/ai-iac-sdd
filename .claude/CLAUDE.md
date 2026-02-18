@@ -1,0 +1,51 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Context
+
+This repository is a **Terraform module development template** using **SDD v2** (Spec-Driven Development, 4-phase workflow). The goal is to author enterprise-ready, reusable Terraform modules — not to consume modules from a registry. Modules are written using raw resources with secure defaults, tested with `terraform test` in a TDD workflow, and published to a private registry.
+
+## Primary Reference
+
+See the root `./AGENTS.md` for the main project documentation, workflow phases, and agent/skill inventory.
+
+@/workspace/AGENTS.md
+
+## Constitution
+
+Non-negotiable rules for all code generation live in the constitution. Read it before generating any Terraform code.
+
+`.foundations/memory/constitution.md`
+
+## Workflow Entry Points
+
+| Command | Purpose |
+|---------|---------|
+| `/tf-plan-v2` | Full 4-phase workflow: Clarify, Design, Implement (TDD), Validate |
+| `/tf-implement` | Implementation only — starts from an existing `design.md` |
+
+## Design Template
+
+When creating design documents, use the canonical template at `.foundations/templates/design-template.md`.
+
+## Key Conventions
+
+- During the **clarification phase**, use the `AskUserQuestion` tool to gather requirements interactively.
+- Use **concurrent opus subagents** for research and parallel work. Prefer parallel tool calls and task dispatches wherever phases or subtasks are independent.
+- Phase 2 (Design) requires **user approval** before Phase 3 (Implement) begins.
+- **Environment validation**: Run `.foundations/scripts/bash/validate-env.sh` at the start of Phase 1 to check prerequisites (Terraform, gh CLI, MCP servers, etc.).
+- **Progress tracking**: Use `.foundations/scripts/bash/post-issue-progress.sh` to post phase status updates to the GitHub issue.
+- **Checkpoint commits**: Use `.foundations/scripts/bash/checkpoint-commit.sh` to create intermediate commits at phase boundaries.
+
+## Additional Component-Specific Guidance
+
+For detailed module-specific implementation guides, check for AGENTS.md files in subdirectories throughout the project.
+
+## Updating AGENTS.md Files
+
+When you discover new information that would be helpful for future development work:
+
+- **Update existing AGENTS.md files** when you learn implementation details, debugging insights, or architectural patterns specific to that component
+- **Create new AGENTS.md files** in relevant directories when working with areas that don't yet have documentation
+- **Add valuable insights** such as common pitfalls, debugging techniques, dependency relationships, or implementation patterns

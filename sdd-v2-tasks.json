@@ -1,0 +1,553 @@
+{
+  "project": "SDD v2 Implementation",
+  "created": "2026-02-18",
+  "description": "Build the Terraform Module SDD Workflow v2 — 4-phase spec-driven development system with TDD, single design document, and embedded security.",
+  "source_docs": [
+    "terraform-sdd-v2.md",
+    "terraform-sdd-v2-implementation-guide.md"
+  ],
+  "v1_repo": "https://github.com/hashi-demo-lab/ai-iac-module-template",
+  "v1_repo_local": "/tmp/v1-repo",
+  "v1_inventory": {
+    "skills_found": 17,
+    "agents_found": 12,
+    "templates_found": 8,
+    "scripts_found": 7,
+    "issue_templates_found": 3,
+    "skills_list": [
+      "example", "terraform-style-guide", "terraform-test (with 4 reference files)",
+      "tf-architecture-patterns", "tf-checklist-patterns", "tf-compound-patterns",
+      "tf-consistency-rules", "tf-domain-taxonomy", "tf-e2e-tester (with 6 prompts)",
+      "tf-implement", "tf-implementation-patterns", "tf-judge-criteria",
+      "tf-module-plan", "tf-report-template", "tf-research-heuristics",
+      "tf-security-baselines", "tf-spec-writing", "tf-task-patterns"
+    ],
+    "agents_list": [
+      "sdd-specify", "sdd-clarify", "sdd-research", "sdd-plan-draft",
+      "sdd-tasks", "sdd-checklist", "sdd-analyze",
+      "tf-task-executor", "tf-deployer", "tf-report-generator",
+      "code-quality-judge", "aws-security-advisor"
+    ],
+    "templates_list": [
+      "spec-template.md", "plan-template.md", "contracts-template.md",
+      "tasks-template.md", "checklist-template.md", "code-quality-evaluation-report.md",
+      "deployment-report-template.md", "remediation-log-template.md"
+    ],
+    "scripts_list": [
+      "validate-env.sh", "common.sh", "check-prerequisites.sh",
+      "checkpoint-commit.sh", "create-new-feature.sh", "setup-plan.sh",
+      "post-issue-progress.sh", "update-agent-context.sh"
+    ]
+  },
+  "decisions_resolved": {
+    "Q1_design_review_gate": "YES — Phase 2 requires user approval before Phase 3 via AskUserQuestion",
+    "Q2_research_persistence": "NO — research stays in-memory, no --persist-research flag needed for MVP",
+    "Q3_checklist_validation": "Option (b) — lightweight validation step after design.md in Phase 2",
+    "Q4_rewrite_vs_adapt": "ADAPT — v1 skills port directly with minimal changes. v1 has excellent content."
+  },
+  "phases": [
+    {
+      "id": "P1",
+      "name": "Foundation Layer",
+      "description": "Core files that everything else depends on — constitution, project context, design template.",
+      "tasks": [
+        {
+          "id": "T01",
+          "title": "Create .claude/CLAUDE.md",
+          "description": "Project context file. Points to constitution, lists available skills/agents, defines project conventions. This is the first file Claude Code reads.",
+          "output": ".claude/CLAUDE.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/CLAUDE.md — simple pointer to AGENTS.md with subagent guidance. v2 changes: update skill/agent references for v2 architecture, point to constitution, add v2 workflow entry points (/tf-plan-v2, /tf-implement). Keep same pattern of referencing AGENTS.md for details."
+        },
+        {
+          "id": "T02",
+          "title": "Create .foundations/memory/constitution.md",
+          "description": "Non-negotiable rules: encryption always on, no provider blocks in root modules, standard file layout, tag requirements, security defaults. The authority on code standards.",
+          "output": ".foundations/memory/constitution.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "large",
+          "notes": "v1 source: /tmp/v1-repo/.foundations/memory/constitution.md — 14 sections covering principles through naming. v2 changes: (1) Update §11 Workflow Governance to reference 4-phase v2 workflow instead of 8-phase v1, (2) Remove references to removed artifacts (spec.md, plan.md, contracts/, tasks.md) and replace with design.md, (3) Update §13 Naming to include new agent names (sdd-design, tf-test-writer), (4) Keep all security sections (§4) intact — these are the non-negotiable baselines. (5) Update implementation checklist §10 to reference design.md checklist items."
+        },
+        {
+          "id": "T03",
+          "title": "Create .foundations/templates/design-template.md",
+          "description": "The design document template from Part 1 of the implementation guide. 7 mandatory sections: Purpose, Interface Contract, Resources & Architecture, Security Controls, Test Scenarios, Implementation Checklist, Open Questions.",
+          "output": ".foundations/templates/design-template.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "small",
+          "notes": "NEW file — no v1 equivalent. Content is fully defined in terraform-sdd-v2-implementation-guide.md Part 1 (lines 27-145). Extract template verbatim with placeholder instructions. Include template rules (no cross-section line references, single source of truth for variables/resources, 1:1 assertion mapping, coarse-grained checklist)."
+        },
+        {
+          "id": "T04",
+          "title": "Create AGENTS.md",
+          "description": "Project-level documentation of all agents and skills, their purposes, inputs/outputs, and how they interact.",
+          "output": "AGENTS.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/AGENTS.md — covers core principles, MCP tools, directory map, prerequisites, testing strategy, context management. v2 changes: (1) Update core principles for v2 (add TDD-first, single-artifact), (2) Replace 12-agent architecture description with v2 3-agent + 2-orchestrator architecture, (3) Update directory map (specs/{FEATURE}/design.md replaces spec.md+plan.md+contracts+tasks), (4) Keep MCP tools section, context management rules. (5) Add v2 workflow overview (4 phases)."
+        },
+        {
+          "id": "T05",
+          "title": "Create .foundations/scripts/bash/validate-env.sh",
+          "description": "Environment validation script with GATE/WARN severity classification.",
+          "output": ".foundations/scripts/bash/validate-env.sh",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.foundations/scripts/bash/validate-env.sh — already has GATE/WARN pattern, --json/--quiet flags, checks TFE_TOKEN, GITHUB_TOKEN, gh CLI, tflint, pre-commit. v2 changes: (1) Add GATE check for terraform binary, (2) Add WARN checks for trivy and terraform-docs, (3) Keep existing GATE/WARN/--json pattern. Also port common.sh as dependency."
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Skills — Kept/Elevated from v1",
+      "description": "Skills that transfer from v1 with no or minimal changes.",
+      "tasks": [
+        {
+          "id": "T06",
+          "title": "Create skill: tf-domain-taxonomy",
+          "description": "8-category taxonomy for scanning requirements and identifying ambiguities.",
+          "output": ".claude/skills/tf-domain-taxonomy/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-domain-taxonomy/SKILL.md — fully functional, covers all 8 categories with Impact x Uncertainty ranking, max 5 questions. v2 changes: MINIMAL — (1) Add note about mandatory security-defaults question per v2 proposal, (2) Reduce max questions from 5 to 4 per v2 spec. Otherwise port as-is."
+        },
+        {
+          "id": "T07",
+          "title": "Create skill: tf-research-heuristics",
+          "description": "Guidance for MCP research agents.",
+          "output": ".claude/skills/tf-research-heuristics/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-research-heuristics/SKILL.md — covers research priority order, provider doc strategy, registry patterns, MCP tool references. v2 changes: MINIMAL — update to reference 3-4 parallel research agents pattern from v2 implementation guide Part 3. Port as-is otherwise."
+        },
+        {
+          "id": "T08",
+          "title": "Create skill: tf-architecture-patterns",
+          "description": "Terraform architecture patterns.",
+          "output": ".claude/skills/tf-architecture-patterns/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-architecture-patterns/SKILL.md — module structure, file organization (500 line max), security-first defaults, AWS conventions. v2 changes: NONE — port as-is."
+        },
+        {
+          "id": "T09",
+          "title": "Create skill: tf-implementation-patterns",
+          "description": "Code-level patterns for Terraform implementation.",
+          "output": ".claude/skills/tf-implementation-patterns/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-implementation-patterns/SKILL.md — VPC, IAM, Storage, Dynamic blocks with conditional creation. v2 changes: NONE — port as-is."
+        },
+        {
+          "id": "T10",
+          "title": "Create skill: terraform-test (ELEVATED)",
+          "description": "Terraform test patterns and conventions. Central to v2 TDD workflow.",
+          "output": ".claude/skills/terraform-test/SKILL.md + references/",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "large",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/terraform-test/ — SKILL.md + 4 reference files (assertion-patterns.md, mock-patterns.md, run-block-patterns.md, troubleshooting.md) + README.md. v2 changes: (1) Add v2 TDD workflow section explaining test-first approach, (2) Integrate 6 patterns from implementation guide Part 2 (plan-only, conditional, validation, cross-variable, security assertions, mock providers), (3) Add test file organization convention (basic/complete/validation mapping). Port all 4 reference files as-is — they're already excellent."
+        },
+        {
+          "id": "T11",
+          "title": "Create skill: terraform-style-guide",
+          "description": "Terraform code style conventions.",
+          "output": ".claude/skills/terraform-style-guide/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/terraform-style-guide/SKILL.md — HashiCorp conventions, file organization, block ordering, for_each over count. v2 changes: NONE — port as-is."
+        },
+        {
+          "id": "T12",
+          "title": "Create skill: tf-judge-criteria",
+          "description": "Validation criteria for Phase 4.",
+          "output": ".claude/skills/tf-judge-criteria/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-judge-criteria/SKILL.md — 6-dimension scoring (Module Structure 25%, Security 30%, Code Quality 15%, Variables/Outputs 10%, Testing 10%, Constitution 10%). v2 changes: MINIMAL — update to reference design.md instead of spec.md/plan.md for constitution alignment checks."
+        },
+        {
+          "id": "T13",
+          "title": "Create skill: tf-compound-patterns",
+          "description": "Post-implementation learning patterns.",
+          "output": ".claude/skills/tf-compound-patterns/SKILL.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "small",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-compound-patterns/SKILL.md — memory directory patterns, pitfall recording, AGENTS.md updates. v2 changes: NONE — port as-is."
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "New Agents — v2 Specific",
+      "description": "New agent definitions unique to the v2 workflow.",
+      "tasks": [
+        {
+          "id": "T14",
+          "title": "Create agent: sdd-design",
+          "description": "Design agent that produces design.md from clarified requirements + research findings. Replaces 5 v1 artifacts with one document. Model: opus.",
+          "output": ".claude/agents/sdd-design.md",
+          "depends_on": ["T02", "T03"],
+          "status": "completed",
+          "effort": "large",
+          "notes": "NEW agent — merges v1 sdd-specify + sdd-plan-draft + tf-security-baselines. v1 sources to study: /tmp/v1-repo/.claude/agents/sdd-specify.md (WHAT/WHY patterns, constraint rules), /tmp/v1-repo/.claude/agents/sdd-plan-draft.md (resource inventory, architecture decisions, implementation phases), /tmp/v1-repo/.claude/skills/tf-security-baselines/SKILL.md (6 security domains, risk ratings). Must: (1) Reference constitution for security baselines, (2) Follow design-template.md exactly, (3) Accept research findings as direct input (not files), (4) Produce single specs/{FEATURE}/design.md output. Skills: tf-architecture-patterns, tf-security-baselines content (embedded). Tools: Read, Write, Glob, Grep + MCP tools."
+        },
+        {
+          "id": "T15",
+          "title": "Create agent: tf-test-writer",
+          "description": "Converts design.md Section 5 into .tftest.hcl files. Model: sonnet.",
+          "output": ".claude/agents/tf-test-writer.md",
+          "depends_on": ["T10"],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "NEW agent — no v1 equivalent. Must: (1) Read design.md Section 5 Test Scenarios, (2) Map each assertion to a .tftest.hcl assert block using 6 patterns from terraform-test skill, (3) Organize into tests/basic.tftest.hcl, tests/complete.tftest.hcl, tests/validation.tftest.hcl, (4) Include design.md citation as comments in test files. Skills: terraform-test. Tools: Read, Write, Edit."
+        },
+        {
+          "id": "T16",
+          "title": "Update agent: tf-task-executor",
+          "description": "Updated from v1 to work with design.md instead of tasks.md. TDD-aware.",
+          "output": ".claude/agents/tf-task-executor.md",
+          "depends_on": ["T09", "T11"],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/agents/tf-task-executor.md — reads tasks.md, implements tasks, runs fmt/validate. v2 changes: (1) Read implementation checklist from design.md Section 6 instead of tasks.md, (2) Add terraform test step after terraform validate, (3) Reference design.md Interface Contract for variable/output details, (4) Keep MCP tool access for provider research during implementation. Model stays opus per v1 pattern."
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Orchestrator Skills — v2 Core",
+      "description": "The main workflow orchestrators that tie everything together.",
+      "tasks": [
+        {
+          "id": "T17",
+          "title": "Create skill: tf-plan-v2 (main orchestrator)",
+          "description": "The 4-phase SDD v2 orchestrator. Entry point for the entire workflow.",
+          "output": ".claude/skills/tf-plan-v2/SKILL.md",
+          "depends_on": ["T01", "T02", "T03", "T05", "T06", "T07", "T14"],
+          "status": "completed",
+          "effort": "x-large",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-module-plan/SKILL.md — 7-phase orchestrator (Setup, Specification, Research+Planning, Security Review, Tasks, Analysis+Remediation, Summary). v2 redesign: Collapse to 4 phases per implementation guide Part 4. Phase 1 (Understand): validate-env.sh → MCP org check → requirements intake → taxonomy scan → clarification (max 4 questions, MUST include security-defaults) → parallel MCP research → GitHub issue. Phase 2 (Design): invoke sdd-design agent → validate design.md → post GitHub update → AWAIT USER APPROVAL (Q1 decision). Phase 3 (Build+Test): invoke tf-implement skill (which handles test-writer + task-executor + TDD loop). Phase 4 (Validate): parallel terraform test + validate + fmt + trivy + terraform-docs → post GitHub final update. Key context management rules from v1 AGENTS.md: never call TaskOutput, verify files with Glob not Read, pass minimal $ARGUMENTS."
+        },
+        {
+          "id": "T18",
+          "title": "Update skill: tf-implement (TDD orchestrator)",
+          "description": "TDD implementation orchestrator. Can be standalone or Phase 3 of tf-plan-v2.",
+          "output": ".claude/skills/tf-implement/SKILL.md",
+          "depends_on": ["T15", "T16", "T10"],
+          "status": "completed",
+          "effort": "large",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-implement/SKILL.md — 6 phases (Prerequisites, Implementation via parallel tf-task-executor, Testing, Quality Review via code-quality-judge, Report, Cleanup+PR). v2 changes: (1) Phase 1 becomes: invoke tf-test-writer agent to create .tftest.hcl files FIRST, (2) Phase 2: for each implementation checklist item in design.md §6, invoke tf-task-executor then run terraform validate + terraform test (expect early failures), (3) Phase 3: write examples/basic/ + examples/complete/, (4) Remove code-quality-judge phase (covered by Phase 4 of tf-plan-v2), (5) Remove separate report generation (covered by tf-plan-v2 Phase 4). Keep v1 context management rules."
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Simplified/Removed v1 Artifacts",
+      "description": "Skills being simplified or merged.",
+      "tasks": [
+        {
+          "id": "T19",
+          "title": "Create simplified skill: tf-report-template",
+          "description": "Simplified validation results template for Phase 4 output.",
+          "output": ".claude/skills/tf-report-template/SKILL.md",
+          "depends_on": ["T12"],
+          "status": "completed",
+          "effort": "small",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-report-template/SKILL.md — full readiness report (300 lines max, resource utilization, token usage, agent invocations). v2 simplification: Strip to validation results only — terraform test pass/fail, terraform validate, fmt check, trivy scan results, security checklist pass/fail. Target <100 lines. No agent invocation tracking, no token usage, no workaround tracking."
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "GitHub & CI Integration",
+      "description": "GitHub templates and CI/CD integration.",
+      "tasks": [
+        {
+          "id": "T20",
+          "title": "Create GitHub issue template: module-request.yml",
+          "description": "YAML-based issue template for Terraform module requests.",
+          "output": ".github/ISSUE_TEMPLATE/module-request.yml",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "small",
+          "notes": "v1 source: /tmp/v1-repo/.github/ISSUE_TEMPLATE/ — 3 templates (terraform-module-requirements.yml, terraform-consumer-requirements.yml, terraform-agent-provisioning.yml). v2 approach: Consolidate into single module-request.yml that captures: module name, provider, features, security requirements. Align with 8-category taxonomy for completeness. Simplify from 3 templates to 1."
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "name": "Documentation & Polish",
+      "description": "Final documentation updates and project polish.",
+      "tasks": [
+        {
+          "id": "T21",
+          "title": "Update README.md",
+          "description": "Replace placeholder README with proper project documentation.",
+          "output": "README.md",
+          "depends_on": ["T17", "T18"],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "Write after orchestrators are complete. Include: what SDD v2 is, 4-phase workflow diagram, prerequisites, quickstart (/tf-plan-v2), link to proposal. Reference v1 README for tone."
+        },
+        {
+          "id": "T22",
+          "title": "Final CLAUDE.md and AGENTS.md update",
+          "description": "Finalize both files with accurate references to all built components.",
+          "output": ".claude/CLAUDE.md, AGENTS.md",
+          "depends_on": ["T17", "T18", "T19"],
+          "status": "completed",
+          "effort": "small",
+          "notes": "T01 and T04 create initial versions. This task updates them with final accurate paths after everything is built."
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "name": "Supporting Scripts & Infrastructure",
+      "description": "Helper scripts ported from v1 that support the workflow.",
+      "tasks": [
+        {
+          "id": "T23",
+          "title": "Port supporting bash scripts from v1",
+          "description": "Port common.sh, checkpoint-commit.sh, post-issue-progress.sh, and create-new-feature.sh from v1.",
+          "output": ".foundations/scripts/bash/common.sh, checkpoint-commit.sh, post-issue-progress.sh, create-new-feature.sh",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.foundations/scripts/bash/ — common.sh (shared utils), checkpoint-commit.sh (git automation), post-issue-progress.sh (GitHub issue updates), create-new-feature.sh (branch creation). v2 changes: (1) create-new-feature.sh needs update to create specs/{FEATURE}/design.md instead of spec.md+plan.md, (2) post-issue-progress.sh stays as-is (used in all 4 phases), (3) common.sh stays as-is, (4) checkpoint-commit.sh stays as-is. Remove setup-plan.sh (no separate plan step in v2). Remove check-prerequisites.sh (validate-env.sh covers this)."
+        },
+        {
+          "id": "T24",
+          "title": "Port v1 agents: sdd-research, tf-deployer, code-quality-judge, aws-security-advisor",
+          "description": "Port agents that are used in v2 but not being rewritten.",
+          "output": ".claude/agents/sdd-research.md, tf-deployer.md, code-quality-judge.md, aws-security-advisor.md",
+          "depends_on": [],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/agents/ — these 4 agents work as-is in v2. sdd-research answers ONE question per instance using MCP tools (used in Phase 1). tf-deployer runs terraform test + optional sandbox deploy (used in Phase 4). code-quality-judge evaluates modules on 6 dimensions (optional in Phase 4). aws-security-advisor evaluates security across 6 domains (used by sdd-design during Phase 2). Port with minimal changes."
+        },
+        {
+          "id": "T25",
+          "title": "Port tf-e2e-tester skill with v2 updates",
+          "description": "Port end-to-end test harness from v1, updated to test v2 workflow.",
+          "output": ".claude/skills/tf-e2e-tester/",
+          "depends_on": ["T17", "T18"],
+          "status": "completed",
+          "effort": "medium",
+          "notes": "v1 source: /tmp/v1-repo/.claude/skills/tf-e2e-tester/ — SKILL.md + README.md + 6 prompt files. v2 changes: Update to test /tf-plan-v2 instead of /tf-plan, update to test v2 /tf-implement instead of v1. Port all 6 prompt files as-is (ASG, CloudFront, EC2, Elasticsearch, Serverless, SQS). Depends on orchestrators being complete."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_tasks": 25,
+    "by_effort": {
+      "small": 4,
+      "medium": 14,
+      "large": 4,
+      "x-large": 2,
+      "total_new_tasks_added": "T23 (port scripts), T24 (port agents), T25 (port e2e tester)"
+    },
+    "by_phase": {
+      "P1_foundation": 5,
+      "P2_kept_skills": 8,
+      "P3_new_agents": 3,
+      "P4_orchestrators": 2,
+      "P5_simplified": 1,
+      "P6_github": 1,
+      "P7_documentation": 2,
+      "P8_supporting": 3
+    },
+    "critical_path": [
+      "T02 (constitution)",
+      "T03 (design template)",
+      "T14 (sdd-design agent)",
+      "T17 (tf-plan-v2 orchestrator)"
+    ],
+    "parallelizable_groups": [
+      "Wave 1: [T01, T02, T03, T04, T05, T20, T23, T24] — all foundation + no-dependency items",
+      "Wave 2: [T06, T07, T08, T09, T10, T11, T12, T13] — all skills (no dependencies)",
+      "Wave 3: [T14, T15, T16, T19] — agents + simplified report",
+      "Wave 4: [T17, T18] — orchestrators",
+      "Wave 5: [T21, T22, T25] — documentation + e2e tester"
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "Q1",
+      "question": "Should Phase 2 require user approval before Phase 3 begins?",
+      "status": "RESOLVED",
+      "decision": "YES — design review gate via AskUserQuestion before Phase 3"
+    },
+    {
+      "id": "Q2",
+      "question": "Should we keep a lightweight research-notes.md for institutional memory?",
+      "status": "RESOLVED",
+      "decision": "NO — research stays in-memory per proposal"
+    },
+    {
+      "id": "Q3",
+      "question": "Where does checklist validation happen in v2?",
+      "status": "RESOLVED",
+      "decision": "Option (b) — lightweight validation step after design.md generation in Phase 2"
+    },
+    {
+      "id": "Q4",
+      "question": "How much of the v1 skill library should be rewritten vs. adapted?",
+      "status": "RESOLVED",
+      "decision": "ADAPT — v1 skills are excellent, port with minimal v2-specific changes"
+    }
+  ],
+  "session_log": [
+    {
+      "timestamp": "2026-02-18T08:00",
+      "action": "Created initial task plan with 22 tasks across 7 phases"
+    },
+    {
+      "timestamp": "2026-02-18T08:05",
+      "action": "Explored v1 repo (hashi-demo-lab/ai-iac-module-template). Found 17 skills, 12 agents, 8 templates, 7 scripts, 3 issue templates. All content retrieved in full.",
+      "key_findings": [
+        "v1 skills are well-structured and can be ported with minimal changes",
+        "Constitution is comprehensive (14 sections) — needs workflow governance updates for v2",
+        "validate-env.sh already has GATE/WARN pattern with --json support",
+        "4 agents port as-is (sdd-research, tf-deployer, code-quality-judge, aws-security-advisor)",
+        "Added 3 new tasks: T23 (scripts), T24 (port agents), T25 (e2e tester)",
+        "Total tasks now 25"
+      ]
+    },
+    {
+      "timestamp": "2026-02-18T08:06",
+      "action": "Resolved all 4 open questions. Updated task notes with v1 source paths and specific v2 changes needed."
+    },
+    {
+      "timestamp": "2026-02-18T08:30",
+      "action": "Wave 1 COMPLETE — all 8 tasks finished via 7 parallel OPUS agents",
+      "completed_tasks": ["T01", "T02", "T03", "T04", "T05", "T20", "T23", "T24"],
+      "files_created": [
+        ".claude/CLAUDE.md",
+        ".foundations/memory/constitution.md (778 lines, 14 sections)",
+        ".foundations/templates/design-template.md (128 lines)",
+        "AGENTS.md",
+        ".foundations/scripts/bash/validate-env.sh",
+        ".foundations/scripts/bash/common.sh",
+        ".foundations/scripts/bash/checkpoint-commit.sh",
+        ".foundations/scripts/bash/post-issue-progress.sh",
+        ".foundations/scripts/bash/create-new-feature.sh",
+        ".github/ISSUE_TEMPLATE/module-request.yml (248 lines)",
+        ".claude/agents/sdd-research.md",
+        ".claude/agents/tf-deployer.md",
+        ".claude/agents/code-quality-judge.md (plan.md→design.md)",
+        ".claude/agents/aws-security-advisor.md"
+      ],
+      "verification": "All scripts pass bash -n syntax check. Constitution verified zero stale v1 references. Agent diffs confirmed minimal changes."
+    },
+    {
+      "timestamp": "2026-02-18T09:00",
+      "action": "Starting Wave 2 — port 8 skills from v1 (T06-T13) via 8 parallel OPUS agents"
+    },
+    {
+      "timestamp": "2026-02-18T09:15",
+      "action": "Wave 2 COMPLETE — all 8 skills ported via 8 parallel OPUS agents",
+      "completed_tasks": ["T06", "T07", "T08", "T09", "T10", "T11", "T12", "T13"],
+      "files_created": [
+        ".claude/skills/tf-domain-taxonomy/SKILL.md (2 changes: max questions 5→4, mandatory security-defaults question)",
+        ".claude/skills/tf-research-heuristics/SKILL.md (1 change: added V2 Parallel Research Pattern section)",
+        ".claude/skills/tf-architecture-patterns/SKILL.md (as-is, fixed multi-line frontmatter)",
+        ".claude/skills/tf-implementation-patterns/SKILL.md (as-is)",
+        ".claude/skills/terraform-test/SKILL.md (ELEVATED: 3 new sections — V2 TDD Workflow, V2 Test Patterns with 6 patterns, test file org)",
+        ".claude/skills/terraform-test/README.md (as-is)",
+        ".claude/skills/terraform-test/references/assertion-patterns.md (as-is)",
+        ".claude/skills/terraform-test/references/mock-patterns.md (as-is)",
+        ".claude/skills/terraform-test/references/run-block-patterns.md (as-is)",
+        ".claude/skills/terraform-test/references/troubleshooting.md (as-is)",
+        ".claude/skills/terraform-style-guide/SKILL.md (as-is)",
+        ".claude/skills/tf-judge-criteria/SKILL.md (2 changes: plan.md→design.md)",
+        ".claude/skills/tf-compound-patterns/SKILL.md (as-is, fixed multi-line frontmatter)"
+      ],
+      "post_fix": "Fixed 2 SKILL.md files with multi-line YAML description: >  frontmatter (tf-architecture-patterns, tf-compound-patterns) — collapsed to single-line"
+    },
+    {
+      "timestamp": "2026-02-18T09:20",
+      "action": "Starting Wave 3 — create 3 new agents + simplified report (T14, T15, T16, T19) via 4 parallel OPUS agents. All dependencies satisfied: T02, T03, T09, T10, T11, T12 complete."
+    },
+    {
+      "timestamp": "2026-02-18T09:35",
+      "action": "Wave 3 COMPLETE — all 4 tasks finished via 4 parallel OPUS agents",
+      "completed_tasks": ["T14", "T15", "T16", "T19"],
+      "files_created": [
+        ".claude/agents/sdd-design.md (NEW — merges sdd-specify + sdd-plan-draft + tf-security-baselines. 7-section design template, 6 security domains embedded, validation step)",
+        ".claude/agents/tf-test-writer.md (NEW — converts design.md §5 to .tftest.hcl. Model: sonnet. 3-file convention: basic/complete/validation)",
+        ".claude/agents/tf-task-executor.md (UPDATED — reads design.md §2/§3/§6 instead of tasks.md/plan.md. Added terraform test step. TDD-aware reporting)",
+        ".claude/skills/tf-report-template/SKILL.md (SIMPLIFIED — 92 lines, validation-only: test/validate/fmt/trivy/security checklist)"
+      ],
+      "post_fix": "Fixed 2 multi-line YAML frontmatter issues in skills from Wave 2 (tf-architecture-patterns, tf-compound-patterns). All diagnostics clean."
+    },
+    {
+      "timestamp": "2026-02-18T09:40",
+      "action": "Starting Wave 4 — create 2 orchestrator skills (T17, T18) via 2 parallel OPUS agents. All dependencies satisfied. These are the most complex deliverables."
+    },
+    {
+      "timestamp": "2026-02-18T09:55",
+      "action": "Wave 4 COMPLETE — both orchestrator skills finished via 2 parallel OPUS agents",
+      "completed_tasks": ["T17", "T18"],
+      "files_created": [
+        ".claude/skills/tf-plan-v2/SKILL.md (433 lines — main 4-phase orchestrator. user-invokable: true. 7→4 phase collapse, mandatory design approval gate, TDD delegation to tf-implement, parallel validation in Phase 4)",
+        ".claude/skills/tf-implement/SKILL.md (244 lines — TDD implementation orchestrator. user-invokable: true. 5 phases: prerequisites, write tests first, implement, examples, final check. Standalone vs delegated mode branching)"
+      ]
+    },
+    {
+      "timestamp": "2026-02-18T10:00",
+      "action": "Starting Wave 5 — final wave: README.md (T21), CLAUDE.md+AGENTS.md update (T22), port e2e tester (T25) via 3 parallel OPUS agents"
+    },
+    {
+      "timestamp": "2026-02-18T10:15",
+      "action": "Wave 5 COMPLETE — all 3 final tasks finished + 1 fix",
+      "completed_tasks": ["T21", "T22", "T25"],
+      "files_created": [
+        "README.md (181 lines — full project documentation with workflow diagram, quickstart, project structure, key concepts)",
+        ".claude/CLAUDE.md (updated — added 3 script convention notes: validate-env.sh, post-issue-progress.sh, checkpoint-commit.sh)",
+        "AGENTS.md (updated — added constitution.md to directory map, expanded scripts path with file names)",
+        ".claude/skills/tf-e2e-tester/SKILL.md (updated for v2: /tf-plan-v2, design.md, 3-file test convention)",
+        ".claude/skills/tf-e2e-tester/README.md (updated for v2)",
+        ".claude/skills/tf-e2e-tester/prompts/example_asg.md (as-is)",
+        ".claude/skills/tf-e2e-tester/prompts/example_cloudfront.md (as-is)",
+        ".claude/skills/tf-e2e-tester/prompts/example_ec2.md (as-is)",
+        ".claude/skills/tf-e2e-tester/prompts/example_elastic.md (as-is)",
+        ".claude/skills/tf-e2e-tester/prompts/example_serverless.md (as-is)",
+        ".claude/skills/tf-e2e-tester/prompts/example_sqs.md (as-is)"
+      ],
+      "fix_applied": "Created .claude/skills/tf-security-baselines/SKILL.md (ported as-is from v1) — aws-security-advisor agent referenced this skill but it didn't exist"
+    },
+    {
+      "timestamp": "2026-02-18T10:20",
+      "action": "ALL 25 TASKS COMPLETE. SDD v2 implementation finished.",
+      "summary": {
+        "total_tasks": 25,
+        "completed": 25,
+        "waves": 5,
+        "total_files_created": 42,
+        "agents_built": 7,
+        "skills_built": 12,
+        "scripts_built": 5,
+        "templates_built": 1,
+        "issue_templates_built": 1,
+        "documentation_files": 3,
+        "bonus_fix": "tf-security-baselines skill (referenced by aws-security-advisor but missing)"
+      }
+    }
+  ]
+}
