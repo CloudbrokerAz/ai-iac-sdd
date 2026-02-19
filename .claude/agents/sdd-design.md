@@ -58,7 +58,8 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    ### Section 3 — Resources & Architecture
 
    Define the resource inventory and architectural decisions, grounded in research findings.
-   - **Resource Inventory table columns**: Resource Type | Logical Name | Conditional | Depends On | Key Configuration
+   - **Resource Inventory table columns**: Resource Type | Logical Name | Conditional | Depends On | Key Configuration | Schema Notes
+   - **Schema Notes column**: For each resource, note which nested blocks are set-typed vs list-typed in the provider schema (e.g., "rule is set", "transition is set"). This prevents `[0]` indexing errors in test assertions — set-typed blocks require `one()` instead. Use `--` if the resource has no notable nested block types.
    - Use `this` as the primary resource name for single-instance resources (constitution §2.2)
    - Use descriptive names for multiple resources of the same type (e.g., `public`, `private`)
    - **Every resource selection MUST reference research findings** — cite which research question/finding justified the choice
@@ -88,12 +89,17 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 
    ### Section 5 — Test Scenarios
 
-   Define test scenarios that will drive TDD implementation. Three scenario groups are required:
-   - **Secure Defaults** (basic example) — Verify the module works with minimal inputs and security is enabled by default
-   - **Full Features** (complete example) — Verify all features enabled, all optional resources created, all outputs populated
-   - **Validation Errors** — Verify invalid inputs are rejected with clear error messages
+   Define test scenarios that will drive TDD implementation. Five scenario groups are required:
+   - **Secure Defaults** (basic) — Verify the module works with minimal inputs and security is enabled by default
+   - **Full Features** (complete) — Verify all features enabled, all optional resources created, all outputs populated
+   - **Feature Interactions** (edge cases) — Verify non-obvious toggle combinations: features that gate other resources, disabled-feature suppression, features without their typical companions, default/merge precedence. Aim for 3-6 sub-scenarios covering the meaningful combinations from the resource inventory's Conditional column.
+   - **Validation Errors** (reject) — Verify invalid inputs are rejected with clear error messages
+   - **Validation Boundaries** (accept) — Verify boundary-pass values are accepted: minimum valid, maximum valid, and edge values for each validation rule. Confirms validations do not over-reject.
+   - **Start with a Test Strategy sub-section** specifying: (1) tests run against the root module directly (no `module {}` blocks), (2) mock provider strategy (`mock_provider` blocks), (3) whether `mock_data` blocks are needed for data sources
    - Each scenario specifies: Purpose, Example directory, Command (`plan` for all plan-only tests), Inputs (HCL), and Assertions
    - **Every assertion maps 1:1 to a `.tftest.hcl` assert block** — no compound assertions
+   - **Every assertion includes the HCL access path** — e.g., `aws_s3_bucket.this.bucket == "my-bucket"` or `one(aws_s3_bucket_server_side_encryption_configuration.this.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"`. Use the Schema Notes column from Section 3 to determine when `one()` is needed for set-typed blocks.
+   - **Flag plan-time unknowns**: Assertions on computed-only attributes (ARNs, endpoints, generated IDs) are untestable with `command = plan` and mock providers. Mark these with `[plan-unknown]` so the test writer can substitute resource-existence checks.
    - Use `command = plan` for all plan-only tests (no cloud access needed)
    - Include security assertions from line 1: encryption enabled, public access blocked, TLS enforced, least-privilege policies
    - Validation error scenarios use `expect_failures` to verify rejection of bad inputs
@@ -115,7 +121,10 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Every resource in §3 has a Logical Name and Key Configuration
    - Every security control in §4 has a CIS or Well-Architected reference (or explicit N/A justification)
    - Every security control row in §4 maps to at least one specific assertion in §5 (not just resource existence -- assert the enforced configuration value)
+   - §5 has all 5 scenario groups: secure defaults, full features, feature interactions, validation errors, validation boundaries
    - Every test scenario in §5 has >= 2 assertions
+   - Feature interactions cover toggle combinations from §3 resource Conditional column
+   - Validation boundaries include boundary-pass cases for each validation rule in §2
    - Implementation checklist in §6 has 4-8 items
    - No section references another section by line number (template rule)
    - Variable names appear exactly once — in §2 Interface Contract
@@ -157,10 +166,13 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 
 ### Test Scenarios (Section 5)
 
+- Start with a Test Strategy sub-section (root module testing, mock provider config, mock_data needs)
 - Use `command = plan` for all plan-only tests
-- Map 1:1 from design assertion to `.tftest.hcl` assert block
+- Map 1:1 from design assertion to `.tftest.hcl` assert block — include the HCL access path in each assertion
+- Use `one()` for set-typed nested blocks (check Schema Notes in Section 3)
+- Mark computed-only attribute assertions with `[plan-unknown]`
 - Include security assertions from line 1
-- Three scenario groups required: secure defaults, full features, validation errors
+- Five scenario groups required: secure defaults, full features, feature interactions, validation errors, validation boundaries
 
 ### Implementation Checklist (Section 6)
 
@@ -168,6 +180,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 - Ordered by dependency
 - No line references between sections (template rule)
 - Each item completable in one agent turn
+- Each item lists which files it creates or modifies — no overlap between items
 
 ### Cross-Cutting
 

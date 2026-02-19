@@ -145,14 +145,16 @@ if ! git commit -m "$COMMIT_MSG"; then
 fi
 
 # --- Push (try plain push first, fall back to setting upstream) ---
+# Push failure is non-fatal — the commit is the important part.
+# The branch will be pushed later (e.g., during PR creation).
 if ! git push 2>/dev/null; then
     if ! git push -u origin HEAD 2>/dev/null; then
         if $JSON_MODE; then
             printf '{"committed":true,"pushed":false,"reason":"push_failed","message":"%s"}\n' "$COMMIT_MSG"
         elif ! $QUIET_MODE; then
-            echo "ERROR: git push failed. Commit was created locally: $COMMIT_MSG" >&2
+            echo "Warning: git push failed. Commit was created locally: $COMMIT_MSG" >&2
         fi
-        exit 1
+        exit 0
     fi
 fi
 
