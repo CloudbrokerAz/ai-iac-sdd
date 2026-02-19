@@ -15,7 +15,7 @@
 #                       "planning", "compound", "implementation-phase-N")
 #
 # OPTIONS:
-#   --dir <path>        Directory to stage (default: specs/)
+#   --dir <path>        Directory to stage (default: . i.e. all changes)
 #   --prefix <type>     Commit type prefix: docs, feat, compound (default: docs)
 #   --json              Output result as JSON
 #   --quiet             Suppress output (exit code only)
@@ -38,7 +38,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # --- Defaults ---
-STAGE_DIR="specs/"
+STAGE_DIR="."
 COMMIT_PREFIX="docs"
 JSON_MODE=false
 QUIET_MODE=false
@@ -73,7 +73,7 @@ ARGUMENTS:
   step_name           Short step identifier (e.g., "specify", "clarify")
 
 OPTIONS:
-  --dir <path>        Directory to stage (default: specs/)
+  --dir <path>        Directory to stage (default: . i.e. all changes)
   --prefix <type>     Commit type prefix: docs, feat, compound (default: docs)
   --json              Output result as JSON
   --quiet             Suppress output (exit code only)
