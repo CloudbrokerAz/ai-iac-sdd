@@ -9,7 +9,7 @@ argument-hint: "[module-name] [provider] - Brief description of what the module 
 
 Produces `specs/{FEATURE}/design.md` from requirements. Stops for human approval before any code is written.
 
-Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>"`.
+Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>"`. Valid status values: `started`, `in-progress`, `complete`, `failed`.
 
 ## Phase 1: Understand
 

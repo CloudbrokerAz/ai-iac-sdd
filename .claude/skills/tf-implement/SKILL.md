@@ -9,7 +9,7 @@ argument-hint: "[feature-name] - Implement from existing specs/{feature}/design.
 
 Builds and validates a Terraform module from `specs/{FEATURE}/design.md` using TDD.
 
-Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>"`.
+Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>"`. Valid status values: `started`, `in-progress`, `complete`, `failed`.
 Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.sh --dir . --prefix feat "$DESCRIPTION"`.
 
 ## Prerequisites

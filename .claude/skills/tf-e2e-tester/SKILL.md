@@ -14,6 +14,7 @@ Execute phases sequentially. Before and after each subagent run: post progress t
 ```
 bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>" "$DETAILS"
 ```
+Valid status values: `started`, `in-progress`, `complete`, `failed`.
 
 ## E2E Overrides
 
