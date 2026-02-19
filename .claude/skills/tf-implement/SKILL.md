@@ -18,11 +18,11 @@ Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.s
 2. Run `bash .foundations/scripts/bash/validate-env.sh --json`. Stop if `gate_passed=false`.
 3. Verify `specs/{FEATURE}/design.md` exists via Glob. Stop if missing — tell user to run `/tf-plan-v2` first.
 4. Find `$ISSUE_NUMBER` from `$ARGUMENTS` or `gh issue list --search "$FEATURE"`.
-5. Run `terraform init -backend=false`.
 
 ## Phase 3: Build + Test
 
-6. Launch `tf-test-writer` agent with FEATURE path. Verify `tests/*.tftest.hcl` exist via Glob.
+5. Launch `tf-test-writer` agent with FEATURE path. Verify `versions.tf`, `variables.tf`, and `tests/*.tftest.hcl` exist via Glob.
+6. Run `terraform init -backend=false`.
 7. Run `terraform test` to establish red TDD baseline. Checkpoint commit.
 8. Extract checklist items from design.md Section 6 via Grep.
 9. For each checklist item, launch `tf-task-executor` agent with FEATURE path and item description. Use concurrent subagents for independent items.

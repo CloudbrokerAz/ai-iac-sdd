@@ -1,6 +1,6 @@
 ---
 name: tf-test-writer
-description: Convert design.md test scenarios into .tftest.hcl files for TDD workflow. Reads Section 5 of the design document and generates test files that map 1:1 from design assertions to HCL assert blocks.
+description: Write module scaffolding (versions.tf, variables.tf) and convert design.md test scenarios into .tftest.hcl files for TDD workflow. Reads Sections 2, 3, and 5 of the design document.
 model: opus
 color: green
 skills:
@@ -15,24 +15,27 @@ tools:
 
 # tf-test-writer
 
-Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files. Tests are written BEFORE module code. The generated tests will initially fail, then pass as implementation progresses.
+Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files and write module scaffolding (`versions.tf`, `variables.tf`). Tests are written BEFORE module code. The generated tests will initially fail, then pass as implementation progresses.
 
 ## Instructions
 
-1. **Read Design**: Load `specs/{FEATURE}/design.md` and extract Section 5 (Test Scenarios). Parse every scenario group, scenario name, input variables, and assertion list.
-2. **Map Scenarios**: Map each scenario group to a test file:
+1. **Read Design**: Load `specs/{FEATURE}/design.md`. Extract Section 2 (Interface Contract) for variables and provider requirements, and Section 5 (Test Scenarios) for test generation. Parse every scenario group, scenario name, input variables, and assertion list.
+2. **Write Scaffolding**: Before writing tests, create the minimal `.tf` files that tests need to parse:
+   - `versions.tf` — `terraform {}` block with `required_version` and `required_providers` from the design's architectural decisions (Section 3) or constitution defaults (`>= 1.7` for Terraform, `>= 5.0` for AWS provider)
+   - `variables.tf` — All variable declarations from design.md Section 2 (Interface Contract): name, type, description, default, sensitive flag, and validation blocks. This file defines the interface — implementation code references these variables later.
+3. **Map Scenarios**: Map each scenario group to a test file:
    - "Secure Defaults" / basic scenarios / minimal-input scenarios --> `tests/basic.tftest.hcl`
    - "Full Features" / complete scenarios / all-features-enabled scenarios --> `tests/complete.tftest.hcl`
    - "Validation Errors" / invalid input scenarios / rejection scenarios --> `tests/validation.tftest.hcl`
-3. **Generate Tests**: For each scenario:
+4. **Generate Tests**: For each scenario:
    - Create a `run` block named after the scenario (snake_case, e.g., `run "test_default_encryption" {}`)
    - Set `command = plan` (all tests are plan-only by default)
    - Populate `variables {}` block from the scenario inputs listed in design.md
    - For each assertion in the scenario, create an `assert {}` block with `condition` and `error_message`
    - For validation scenarios, use `expect_failures = [var.name]` instead of assert blocks -- one `run` block per invalid input case
-4. **Add Citations**: Include the design.md scenario name as a comment above each run block, e.g., `# Scenario: "Secure Defaults - Encryption Enabled"`
-5. **Write Files**: Write all three test files to the `tests/` directory
-6. **Verify**: Use Glob to confirm all expected files exist under `tests/`
+5. **Add Citations**: Include the design.md scenario name as a comment above each run block, e.g., `# Scenario: "Secure Defaults - Encryption Enabled"`
+6. **Write Files**: Write `versions.tf`, `variables.tf`, and all three test files to the `tests/` directory
+7. **Verify**: Use Glob to confirm `versions.tf`, `variables.tf`, and all expected files exist under `tests/`
 
 ## Examples
 
@@ -153,6 +156,8 @@ run "test_invalid_environment_rejected" {
 
 ## Output
 
+- `versions.tf` -- Terraform and provider version constraints (scaffolding)
+- `variables.tf` -- All variable declarations from design.md Section 2 (scaffolding)
 - `tests/basic.tftest.hcl` -- Secure defaults, features disabled, core outputs
 - `tests/complete.tftest.hcl` -- All features enabled, security assertions
 - `tests/validation.tftest.hcl` -- All invalid input cases (expect_failures)

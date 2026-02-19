@@ -68,7 +68,7 @@ Each agent takes one defined input and produces one defined output.
 | Agent         | Input                                                     | Output                      |
 | ------------- | --------------------------------------------------------- | --------------------------- |
 | Design agent  | Requirements text + research findings + constitution path | `specs/{FEATURE}/design.md` |
-| Test writer   | `specs/{FEATURE}/design.md` Section 5                     | `tests/*.tftest.hcl`        |
+| Test writer   | `specs/{FEATURE}/design.md` Sections 2, 3, 5              | `versions.tf`, `variables.tf`, `tests/*.tftest.hcl` |
 | Task executor | `specs/{FEATURE}/design.md` + checklist item              | Modified `.tf` files        |
 
 - If you find yourself building an agent that needs to read two other agents' outputs and merge them, the upstream agents are wrong — merge them into one.
