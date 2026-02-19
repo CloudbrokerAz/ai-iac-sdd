@@ -23,18 +23,19 @@ Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.s
 
 5. Launch `tf-test-writer` agent with FEATURE path. Verify `versions.tf`, `variables.tf`, and `tests/*.tftest.hcl` exist via Glob.
 6. Run `terraform init -backend=false`.
-7. Run `terraform test` to establish red TDD baseline. Checkpoint commit.
+7. Run `terraform validate` to confirm test files and scaffolding are valid HCL. This is the red TDD baseline — tests parse but resources don't exist yet, so `terraform test` will report errors on missing resource references. That is expected. Do NOT run `terraform test` here — it will fail with reference errors, not meaningful assertion failures. Checkpoint commit.
 8. Extract checklist items from design.md Section 6 via Grep.
 9. For each checklist item, launch `tf-task-executor` agent with FEATURE path and item description. Use concurrent subagents for independent items.
 10. After each item: run `terraform validate` and `terraform test`. Checkpoint commit.
 11. After all items: run `terraform test`. If failures remain, re-launch `tf-test-writer` agent with the error output and any data sources reported by task executors as context.
+12. Verify all checklist items in design.md Section 6 are marked `[x]` via Grep. If any remain `[ ]`, either mark them (if the work was done by a prior item) or flag the gap before proceeding.
 
 ## Phase 4: Validate
 
-12. Run all in parallel: `terraform test`, `terraform validate`, `terraform fmt -check -recursive`, `trivy config .`, `terraform-docs markdown . > README.md`.
-13. Fix failures iteratively (max 3 rounds). Run `terraform fmt -recursive` for format issues.
-14. Write validation report to `specs/{FEATURE}/reports/` by reading the `tf-report-template` skill inline and applying its format (this is not a subagent dispatch — write the report directly).
-15. Checkpoint commit, push branch, create PR linking to `$ISSUE_NUMBER`.
+13. Run all in parallel: `terraform test`, `terraform validate`, `terraform fmt -check -recursive`, `trivy config .`, `terraform-docs markdown . > README.md`.
+14. Fix failures iteratively (max 3 rounds). Run `terraform fmt -recursive` for format issues.
+15. Write validation report to `specs/{FEATURE}/reports/` by reading the `tf-report-template` skill inline and applying its format (this is not a subagent dispatch — write the report directly).
+16. Checkpoint commit, push branch, create PR linking to `$ISSUE_NUMBER`.
 
 ## Done
 
