@@ -6,6 +6,7 @@ color: blue
 skills:
   - tf-architecture-patterns
   - tf-security-baselines
+  - terraform-test
 tools:
   - Read
   - Write
@@ -99,7 +100,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
    - Each scenario specifies: Purpose, Example directory, Command (`plan` for all plan-only tests), Inputs (HCL), and Assertions
    - **Every assertion maps 1:1 to a `.tftest.hcl` assert block** — no compound assertions
    - **Every assertion includes the HCL access path** — e.g., `aws_s3_bucket.this.bucket == "my-bucket"` or `one(aws_s3_bucket_server_side_encryption_configuration.this.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"`. Use the Schema Notes column from Section 3 to determine when `one()` is needed for set-typed blocks.
-   - **Flag plan-time unknowns**: Assertions on computed-only attributes (ARNs, endpoints, generated IDs) are untestable with `command = plan` and mock providers. Mark these with `[plan-unknown]` so the test writer can substitute resource-existence checks.
+   - **Flag plan-time unknowns**: Assertions on computed or provider-resolved attributes are untestable with `command = plan` and mock providers. This includes: (1) provider-generated values like ARNs, endpoints, and IDs, and (2) cross-resource reference attributes that mock providers cannot resolve (e.g., `.bucket` on `aws_s3_bucket_policy`, `.id` or `.arn` read from a dependent resource). If an attribute's value comes from another resource's computed output, it will be unknown with mocks. Mark these with `[plan-unknown]` so the test writer can substitute resource-existence checks.
    - Use `command = plan` for all plan-only tests (no cloud access needed)
    - Include security assertions from line 1: encryption enabled, public access blocked, TLS enforced, least-privilege policies
    - Validation error scenarios use `expect_failures` to verify rejection of bad inputs
@@ -170,7 +171,7 @@ Produce a single `specs/{FEATURE}/design.md` from clarified requirements and res
 - Use `command = plan` for all plan-only tests
 - Map 1:1 from design assertion to `.tftest.hcl` assert block — include the HCL access path in each assertion
 - Use `one()` for set-typed nested blocks (check Schema Notes in Section 3)
-- Mark computed-only attribute assertions with `[plan-unknown]`
+- Mark computed or provider-resolved attribute assertions with `[plan-unknown]` (includes ARNs, endpoints, IDs, and cross-resource references like `.bucket` or `.id` on dependent resources)
 - Include security assertions from line 1
 - Five scenario groups required: secure defaults, full features, feature interactions, validation errors, validation boundaries
 
