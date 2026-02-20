@@ -95,9 +95,9 @@ Mapping of the `tf-plan-v2` orchestrator skill and its interaction with the `sdd
 │  │  │                                                              │  │  │
 │  │  │  PRODUCES 7 SECTIONS:                                        │  │  │
 │  │  │  ┌────────────────────────────────────────────────────────┐  │  │  │
-│  │  │  │ § 1. Purpose                                          │  │  │  │
-│  │  │  │ § 2. Interface Contract (variables + outputs)         │  │  │  │
-│  │  │  │ § 3. Resources & Architecture (resource inventory)    │  │  │  │
+│  │  │  │ § 1. Purpose & Requirements                            │  │  │  │
+│  │  │  │ § 2. Resources & Architecture (resource inventory)    │  │  │  │
+│  │  │  │ § 3. Interface Contract (variables + outputs)         │  │  │  │
 │  │  │  │ § 4. Security Controls (6 domains)                    │  │  │  │
 │  │  │  │ § 5. Test Scenarios (5 scenario groups)               │  │  │  │
 │  │  │  │ § 6. Implementation Checklist (4-8 items)             │  │  │  │

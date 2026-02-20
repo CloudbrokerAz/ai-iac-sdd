@@ -591,7 +591,7 @@ condition = one(one(aws_s3_bucket_lifecycle_configuration.this.rule).transition)
 condition = one(one(aws_s3_bucket_lifecycle_configuration.this.rule).transition).storage_class == "GLACIER"
 ```
 
-Check design.md Section 3 Schema Notes column to identify which nested blocks are set-typed. Apply `one()` at every set-typed level in the access path.
+Check design.md Section 2 Schema Notes column to identify which nested blocks are set-typed. Apply `one()` at every set-typed level in the access path.
 
 3. **Data sources need mocking**: When testing against the root module (no `module {}` block), data sources execute during plan. Add `mock_data` blocks for data sources the module uses.
 

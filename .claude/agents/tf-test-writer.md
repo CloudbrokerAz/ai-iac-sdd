@@ -19,10 +19,10 @@ Convert design.md Section 5 (Test Scenarios) into `.tftest.hcl` test files and w
 
 ## Instructions
 
-1. **Read Design**: Load `specs/{FEATURE}/design.md`. Extract Section 2 (Interface Contract) for variables and provider requirements, and Section 5 (Test Scenarios) for test generation. Parse every scenario group, scenario name, input variables, and assertion list.
+1. **Read Design**: Load `specs/{FEATURE}/design.md`. Extract Section 3 (Interface Contract) for variables and provider requirements, and Section 5 (Test Scenarios) for test generation. Parse every scenario group, scenario name, input variables, and assertion list.
 2. **Write Scaffolding**: Before writing tests, create the minimal `.tf` files that tests need to parse:
-   - `versions.tf` — `terraform {}` block with `required_version` and `required_providers` from the design's architectural decisions (Section 3) or constitution defaults (`>= 1.7` for Terraform, `>= 5.0` for AWS provider)
-   - `variables.tf` — All variable declarations from design.md Section 2 (Interface Contract): name, type, description, default, sensitive flag, and validation blocks. This file defines the interface — implementation code references these variables later.
+   - `versions.tf` — `terraform {}` block with `required_version` and `required_providers` from the design's architectural decisions (Section 2) or constitution defaults (`>= 1.7` for Terraform, `>= 5.0` for AWS provider)
+   - `variables.tf` — All variable declarations from design.md Section 3 (Interface Contract): name, type, description, default, sensitive flag, and validation blocks. This file defines the interface — implementation code references these variables later.
 3. **Map Scenarios**: Map each scenario group to a test file:
    - "Secure Defaults" / basic scenarios / minimal-input scenarios --> `tests/basic.tftest.hcl`
    - "Full Features" / complete scenarios / all-features-enabled scenarios --> `tests/complete.tftest.hcl`
@@ -201,9 +201,9 @@ run "test_minimum_valid_name_length" {
 - Variable values come directly from the design.md scenario inputs -- do not invent values
 - **Test against root module directly** -- do NOT use `module {}` blocks in run blocks. Tests run against the root module, so assert on `resource_type.resource_name.*` (e.g., `aws_s3_bucket.this.bucket`), not `module.*.resource_type.*`
 - For conditional resources using `count`, use index syntax: `resource_type.name[0].attribute` when enabled, `length(resource_type.name[*]) == 0` when disabled
-- **Set-typed blocks**: Use `one()` for set-typed nested blocks — chain `one()` at every set-typed level (see `terraform-test` skill, Plan-Mode Limitations, item 2 for patterns and examples). Check the Schema Notes column in design.md Section 3 to identify which nested blocks are sets
+- **Set-typed blocks**: Use `one()` for set-typed nested blocks — chain `one()` at every set-typed level (see `terraform-test` skill, Plan-Mode Limitations, item 2 for patterns and examples). Check the Schema Notes column in design.md Section 2 to identify which nested blocks are sets
 - **Plan-mode output limitation**: Computed outputs (ARNs, endpoints, IDs) are unknown during `command = plan`. Do NOT assert on `output.*` values. Assert on resource attributes directly instead (e.g., assert `length(aws_s3_bucket_website_configuration.this[*]) == 1` rather than `output.website_endpoint != null`)
-- **Mock data sources**: If the module uses `data` sources (e.g., `aws_iam_policy_document`, `aws_caller_identity`), add a `mock_provider` block at the top of the test file with `mock_data` defaults for each data source. Check `design.md` Section 3 for data sources in the resource inventory, and check existing `.tf` files if available
+- **Mock data sources**: If the module uses `data` sources (e.g., `aws_iam_policy_document`, `aws_caller_identity`), add a `mock_provider` block at the top of the test file with `mock_data` defaults for each data source. Check `design.md` Section 2 for data sources in the resource inventory, and check existing `.tf` files if available
 - Security assertions (encryption, public access blocking, tags) appear in EVERY test file, not just complete -- the basic test must verify secure defaults
 - Use `expect_failures` for validation testing -- one run block per invalid input case, no assert blocks in those run blocks
 - Include a header comment in each file: `# Generated from specs/{FEATURE}/design.md Section 5`
@@ -221,7 +221,7 @@ run "test_minimum_valid_name_length" {
 ## Output
 
 - `versions.tf` -- Terraform and provider version constraints (scaffolding)
-- `variables.tf` -- All variable declarations from design.md Section 2 (scaffolding)
+- `variables.tf` -- All variable declarations from design.md Section 3 (scaffolding)
 - `tests/basic.tftest.hcl` -- Secure defaults, features disabled, core outputs
 - `tests/complete.tftest.hcl` -- All features enabled, security assertions
 - `tests/edge_cases.tftest.hcl` -- Feature toggle combinations, disabled-feature suppression, precedence

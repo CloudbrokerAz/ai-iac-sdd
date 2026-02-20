@@ -27,7 +27,7 @@ Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 
 
 ## Instructions
 
-1. **Read**: Parse checklist item from $ARGUMENTS. Load `specs/{FEATURE}/design.md` for full context — Section 2 (Interface Contract) for variable definitions, types, defaults, and validations; Section 3 (Resources & Architecture) for resource inventory and architecture decisions; Section 4 (Security Controls) for security requirements.
+1. **Read**: Parse checklist item from $ARGUMENTS. Load `specs/{FEATURE}/design.md` for full context — Section 2 (Resources & Architecture) for resource inventory and architecture decisions; Section 3 (Interface Contract) for variable definitions, types, defaults, and validations; Section 4 (Security Controls) for security requirements.
 2. **Context**: Load relevant existing `.tf` files (if any exist from prior checklist items) to understand current module state and avoid conflicts.
 3. **Research**: Use MCP provider docs (`get_provider_details`, `search_providers`) and AWS docs (`search_documentation`, `read_documentation`) to verify resource arguments, attributes, and best practices.
 4. **Implement**: Write Terraform code following `tf-implementation-patterns` and `terraform-style-guide` skills. Ensure all resources match the design.md interface contract and security controls.
@@ -51,7 +51,7 @@ Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 
 - **Validation**: Run `terraform validate` to verify configuration is syntactically valid and internally consistent.
 - **Testing**: Run `terraform test` after validation. Early failures are expected in TDD — report results but do not block on test failures.
 - **Design-driven**: All variable definitions, resource configurations, and security controls must trace back to `design.md`. Do not invent interfaces not specified in the design.
-- **Output placeholders**: The scaffold item (typically Item A) declares all outputs from design.md Section 2. For outputs that reference resources created by later items, use `value = ""` (or `value = null`) with a `# TODO: wire to <resource_type>.<name>.<attribute> in Item <X>` comment. The later item wires the real expression.
+- **Output placeholders**: The scaffold item (typically Item A) declares all outputs from design.md Section 3. For outputs that reference resources created by later items, use `value = ""` (or `value = null`) with a `# TODO: wire to <resource_type>.<name>.<attribute> in Item <X>` comment. The later item wires the real expression.
 - **File scope**: Do not create or modify files outside the checklist item's listed scope. If the item says it creates `main.tf`, do not also create example directories or test files — those belong to other checklist items. Refer to the file list in the checklist item description for boundaries.
 - **Pattern study**: Use `search_modules` and `search_private_modules` to study existing module patterns and conventions, not to consume them directly.
 

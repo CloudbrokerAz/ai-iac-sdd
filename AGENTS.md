@@ -96,7 +96,7 @@ The design.md template defines what the design agent must produce. It is the sin
 
 - Build the template with mandatory sections. No section is optional. Empty tables are permitted (e.g., no CORS resources); missing sections are not.
 - Build the template so each section is self-contained. No section references another section by line number or says "see above."
-- Do not build the template with more than 7 sections: Purpose, Interface Contract, Resources & Architecture, Security Controls, Test Scenarios, Implementation Checklist, Open Questions.
+- Do not build the template with more than 7 sections: Purpose & Requirements, Resources & Architecture, Interface Contract, Security Controls, Test Scenarios, Implementation Checklist, Open Questions.
 - Build the Implementation Checklist section to contain 4-8 items. Not 34 tasks. Each item is one logical unit of work — "Scaffold + versions.tf + variables + base resource" is one item.
 
 **Test**: A developer unfamiliar with the system should be able to read `design.md` alone and know everything needed to build and test the module. If they need to open a second file for context, the template is incomplete.
