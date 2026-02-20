@@ -576,7 +576,7 @@ assert {
 }
 ```
 
-2. **Set-typed blocks cannot be indexed**: Many AWS provider nested blocks (`rule`, `transition`, `cors_rule`, `ingress`, `egress`) are `set` types. Use `one()` for single-element sets.
+2. **Set-typed blocks cannot be indexed**: Many AWS provider nested blocks (`rule`, `transition`, `cors_rule`, `ingress`, `egress`) are `set` types. Use `one()` for single-element sets. When multiple levels of nesting are set-typed, chain `one()` at each level.
 
 ```hcl
 # BAD — rule is a set, not a list
@@ -584,7 +584,14 @@ condition = aws_s3_bucket_server_side_encryption_configuration.this.rule[0].appl
 
 # GOOD — use one() for set-typed blocks
 condition = one(aws_s3_bucket_server_side_encryption_configuration.this.rule).apply_server_side_encryption_by_default[0].sse_algorithm == "AES256"
+
+# GOOD — chain one() when BOTH parent and child blocks are set-typed
+# e.g., lifecycle rule.transition where rule is set AND transition is set
+condition = one(one(aws_s3_bucket_lifecycle_configuration.this.rule).transition).days == 90
+condition = one(one(aws_s3_bucket_lifecycle_configuration.this.rule).transition).storage_class == "GLACIER"
 ```
+
+Check design.md Section 3 Schema Notes column to identify which nested blocks are set-typed. Apply `one()` at every set-typed level in the access path.
 
 3. **Data sources need mocking**: When testing against the root module (no `module {}` block), data sources execute during plan. Add `mock_data` blocks for data sources the module uses.
 

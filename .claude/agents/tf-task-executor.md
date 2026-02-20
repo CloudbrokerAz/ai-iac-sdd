@@ -51,6 +51,7 @@ Execute implementation checklist items from `specs/{FEATURE}/design.md` Section 
 - **Validation**: Run `terraform validate` to verify configuration is syntactically valid and internally consistent.
 - **Testing**: Run `terraform test` after validation. Early failures are expected in TDD — report results but do not block on test failures.
 - **Design-driven**: All variable definitions, resource configurations, and security controls must trace back to `design.md`. Do not invent interfaces not specified in the design.
+- **Output placeholders**: The scaffold item (typically Item A) declares all outputs from design.md Section 2. For outputs that reference resources created by later items, use `value = ""` (or `value = null`) with a `# TODO: wire to <resource_type>.<name>.<attribute> in Item <X>` comment. The later item wires the real expression.
 - **File scope**: Do not create or modify files outside the checklist item's listed scope. If the item says it creates `main.tf`, do not also create example directories or test files — those belong to other checklist items. Refer to the file list in the checklist item description for boundaries.
 - **Pattern study**: Use `search_modules` and `search_private_modules` to study existing module patterns and conventions, not to consume them directly.
 
