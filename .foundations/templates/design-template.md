@@ -8,16 +8,61 @@
 
 ---
 
-## 1. Purpose
+## Table of Contents
+
+1. [Purpose & Requirements](#1-purpose--requirements)
+2. [Resources & Architecture](#2-resources--architecture)
+3. [Interface Contract](#3-interface-contract)
+4. [Security Controls](#4-security-controls)
+5. [Test Scenarios](#5-test-scenarios)
+6. [Implementation Checklist](#6-implementation-checklist)
+7. [Open Questions](#7-open-questions)
+
+---
+
+## 1. Purpose & Requirements
 
 {One paragraph. What infrastructure this module creates, who consumes it,
 what problem it solves. No implementation details.}
 
 **Scope boundary**: {What is explicitly OUT of scope -- prevents scope creep.}
 
+### Requirements
+
+**Functional requirements** -- what the module must do (from Phase 1 clarification):
+
+- {Testable, technology-agnostic statement of required capability}
+- ...
+
+**Non-functional requirements** -- constraints like compliance, performance, availability:
+
+- {Constraint or quality attribute that bounds the design}
+- ...
+
+{Requirements bridge Purpose and Architecture. They are testable and unambiguous.
+Frame capabilities in terms of outcomes, not resources.}
+
 ---
 
-## 2. Interface Contract
+## 2. Resources & Architecture
+
+### Architectural Decisions
+
+{Each decision as a paragraph with this structure:}
+
+**{Decision title}**: {What was chosen}.
+*Rationale*: {Why, with MCP research citation if applicable}.
+*Rejected*: {What was considered and why it was rejected}.
+
+### Resource Inventory
+
+| Resource Type | Logical Name | Conditional | Depends On | Key Configuration | Schema Notes |
+|---------------|-------------|-------------|------------|-------------------|--------------|
+| {aws_resource_type} | {this/name} | {variable or "always"} | {resource.name} | {notable settings} | {nested block types: "rule is set", "transition is set", or -- if none} |
+
+---
+
+## 3. Interface Contract
 
 ### Inputs
 
@@ -33,24 +78,6 @@ It is not repeated anywhere else in any artifact.}
 | Output | Type | Conditional On | Description |
 |--------|------|----------------|-------------|
 | {name} | {type} | {variable or "always"} | {description} |
-
----
-
-## 3. Resources & Architecture
-
-### Resource Inventory
-
-| Resource Type | Logical Name | Conditional | Depends On | Key Configuration | Schema Notes |
-|---------------|-------------|-------------|------------|-------------------|--------------|
-| {aws_resource_type} | {this/name} | {variable or "always"} | {resource.name} | {notable settings} | {nested block types: "rule is set", "transition is set", or -- if none} |
-
-### Architectural Decisions
-
-{Each decision as a paragraph with this structure:}
-
-**{Decision title}**: {What was chosen}.
-*Rationale*: {Why, with MCP research citation if applicable}.
-*Rejected*: {What was considered and why it was rejected}.
 
 ---
 
@@ -101,7 +128,7 @@ It is not repeated anywhere else in any artifact.}
 - ...
 
 {Each assertion MUST include the HCL access path that the test writer will use in the assert condition.
-Use `one()` for set-typed nested blocks (see Schema Notes in Section 3).
+Use `one()` for set-typed nested blocks (see Schema Notes in Section 2).
 Mark assertions on computed or provider-resolved attributes with `[plan-unknown]` — this includes provider-generated values (ARNs, endpoints, IDs) AND cross-resource references resolved by the provider (e.g., `.bucket`, `.id`, `.arn` on dependent resources).}
 
 ### Scenario: Full Features (complete)
@@ -123,7 +150,7 @@ Mark assertions on computed or provider-resolved attributes with `[plan-unknown]
 
 ### Scenario: Feature Interactions (edge cases)
 
-**Purpose**: Verify non-obvious combinations of feature toggles produce correct behavior. Each sub-scenario tests a specific toggle combination where the interaction matters — not just "feature on" or "feature off" in isolation.
+**Purpose**: Verify non-obvious combinations of feature toggles produce correct behavior. Each sub-scenario tests a specific toggle combination where the interaction matters -- not just "feature on" or "feature off" in isolation.
 **Command**: `plan`
 
 {List sub-scenarios. Each sub-scenario is a separate `run` block with its own inputs and assertions.
@@ -146,14 +173,14 @@ Focus on combinations where:
 
 ### Scenario: Validation Boundaries (accept)
 
-**Purpose**: Verify validation rules accept values at the valid boundary. Complements the reject cases — confirms validations do not over-reject.
+**Purpose**: Verify validation rules accept values at the valid boundary. Complements the reject cases -- confirms validations do not over-reject.
 **Command**: `plan`
 
 **Boundary-pass cases**:
 - {input}: {boundary value} -> accepted (description of why this is the boundary)
 - ...
 
-{For each validation rule in Section 2, include the minimum valid and/or maximum valid value.
+{For each validation rule in Section 3, include the minimum valid and/or maximum valid value.
 Example: `bucket_name = "abc"` (exactly 3 chars, minimum valid length).
 Each case becomes a `run` block with `command = plan` and an assert that the relevant resource is created.}
 
@@ -169,7 +196,7 @@ Each case becomes a `run` block with `command = plan` and an assert that the rel
 - For security-enforcing resources (policies, encryption, access controls), assert the configuration content, not just existence
 - Every assertion becomes exactly one assert block in .tftest.hcl
 - Every assertion includes an HCL access path (e.g., `aws_s3_bucket.this.bucket == "my-bucket"`) so the test writer can translate directly to an assert condition
-- Use `one()` for set-typed nested blocks — check Schema Notes column in Section 3 to identify which blocks are sets vs lists
+- Use `one()` for set-typed nested blocks — check Schema Notes column in Section 2 to identify which blocks are sets vs lists
 - Mark assertions on computed or provider-resolved attributes with `[plan-unknown]` — this includes provider-generated values (ARNs, endpoints, IDs) AND cross-resource reference attributes that mock providers cannot resolve (e.g., `.bucket` on `aws_s3_bucket_policy`, `.id` read from a dependency). The test writer will substitute resource-existence checks
 - Every security control from Section 4 must have at least one corresponding assertion here}
 
@@ -201,7 +228,7 @@ Empty section if all questions resolved during clarification.}
 ## Template Rules
 
 1. No section may reference another section by line number
-2. Variable names appear exactly once -- in Interface Contract
-3. Resource names appear exactly once -- in Resource Inventory
+2. Variable names appear exactly once -- in Interface Contract (Section 3)
+3. Resource names appear exactly once -- in Resource Inventory (Section 2)
 4. Each test assertion maps 1:1 to a .tftest.hcl assert block and includes the HCL access path
 5. Implementation checklist items are coarse-grained -- one per logical unit with explicit file scope
