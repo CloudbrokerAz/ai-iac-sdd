@@ -138,7 +138,7 @@ body {
 /* Principles bar */
 .principles {
   max-width: 900px; margin: 0 auto 32px; padding: 0 24px;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
 }
 .principle {
   background: rgba(255,255,255,0.015); border: 1px solid var(--border);
@@ -265,6 +265,271 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
 .edge-legend-tri.el-input { border-left: 5px solid rgba(0,240,255,0.6); }
 .edge-legend-tri.el-output { border-left: 5px solid rgba(255,157,46,0.7); }
 
+/* === DESIGN DOCUMENT VIEW === */
+#view-design { position: relative; z-index: 1; }
+.design-doc-container {
+  max-width: 820px; margin: 0 auto; padding: 0 24px 48px;
+}
+.design-doc-hero {
+  text-align: center; padding: 32px 0 24px;
+}
+.design-doc-hero h1 {
+  font-family: var(--mono); font-size: 1.6rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--orange), var(--pink), var(--purple));
+  background-size: 200% 200%; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite;
+}
+.design-doc-hero p { font-size: 12px; color: #555; margin-top: 6px; letter-spacing: 1px; }
+
+.design-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,157,46,0.08); border: 1px solid rgba(255,157,46,0.25);
+  border-radius: 20px; padding: 6px 16px; margin-top: 12px;
+  font-family: var(--mono); font-size: 11px; color: var(--orange);
+  animation: badge-pulse 3s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,157,46,0); }
+  50% { box-shadow: 0 0 20px 4px rgba(255,157,46,0.12); }
+}
+.badge-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--orange);
+  box-shadow: 0 0 8px rgba(255,157,46,0.6);
+  animation: dot-blink 2s ease-in-out infinite;
+}
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* Design doc paper */
+.design-paper {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.design-paper::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--orange), var(--pink), var(--purple), var(--cyan));
+  background-size: 300% 100%; animation: gradient-shift 5s ease infinite;
+}
+
+/* Paper header */
+.paper-header {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.01);
+}
+.paper-header-title {
+  font-family: var(--mono); font-size: 16px; font-weight: 700; color: #ccc;
+  letter-spacing: 0.5px;
+}
+.paper-header-meta {
+  display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap;
+}
+.paper-meta-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; color: #666;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 10px;
+}
+.paper-meta-tag .meta-label { color: #444; }
+.paper-meta-tag .meta-value { color: #999; }
+.paper-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px;
+  background: rgba(57,255,142,0.06); border: 1px solid rgba(57,255,142,0.2);
+  border-radius: 4px; padding: 3px 10px; color: var(--green);
+}
+.paper-status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 6px rgba(57,255,142,0.5);
+}
+
+/* TOC */
+.paper-toc {
+  padding: 24px 32px;
+}
+.toc-title {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: #555; margin-bottom: 16px;
+}
+.toc-list { list-style: none; }
+.toc-item {
+  display: flex; align-items: center; gap: 0;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: all 0.2s ease; cursor: default;
+}
+.toc-item:last-child { border-bottom: none; }
+.toc-item:hover { background: rgba(255,255,255,0.015); margin: 0 -12px; padding: 10px 12px; border-radius: 6px; }
+.toc-number {
+  font-family: var(--mono); font-size: 18px; font-weight: 800;
+  width: 36px; flex-shrink: 0; text-align: center;
+}
+.toc-connector {
+  width: 24px; height: 1px; flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
+  margin: 0 8px;
+}
+.toc-content { flex: 1; min-width: 0; }
+.toc-section-name {
+  font-family: var(--mono); font-size: 13px; font-weight: 600; color: #ddd;
+  letter-spacing: 0.3px;
+}
+.toc-section-desc {
+  font-size: 11px; color: #555; margin-top: 2px; line-height: 1.4;
+}
+.toc-icon {
+  flex-shrink: 0; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; font-size: 13px;
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  margin-left: 12px;
+}
+
+/* Section colors */
+.toc-s1 .toc-number { color: var(--pink); }
+.toc-s1 .toc-icon { color: var(--pink); border-color: rgba(255,45,123,0.2); }
+.toc-s2 .toc-number { color: var(--cyan); }
+.toc-s2 .toc-icon { color: var(--cyan); border-color: rgba(0,240,255,0.2); }
+.toc-s3 .toc-number { color: var(--purple); }
+.toc-s3 .toc-icon { color: var(--purple); border-color: rgba(180,77,255,0.2); }
+.toc-s4 .toc-number { color: var(--red); }
+.toc-s4 .toc-icon { color: var(--red); border-color: rgba(255,68,68,0.2); }
+.toc-s5 .toc-number { color: var(--green); }
+.toc-s5 .toc-icon { color: var(--green); border-color: rgba(57,255,142,0.2); }
+.toc-s6 .toc-number { color: var(--orange); }
+.toc-s6 .toc-icon { color: var(--orange); border-color: rgba(255,157,46,0.2); }
+.toc-s7 .toc-number { color: var(--ice); }
+.toc-s7 .toc-icon { color: var(--ice); border-color: rgba(168,200,255,0.2); }
+
+/* Section preview cards */
+.section-previews {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding: 0 32px 28px;
+}
+.section-preview {
+  background: rgba(255,255,255,0.015);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px;
+  position: relative; overflow: hidden;
+  transition: all 0.25s ease;
+}
+.section-preview:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+}
+.section-preview::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+  border-radius: 3px 0 0 3px;
+}
+.sp-1::before { background: var(--pink); }
+.sp-2::before { background: var(--cyan); }
+.sp-3::before { background: var(--purple); }
+.sp-4::before { background: var(--red); }
+.sp-5::before { background: var(--green); }
+.sp-6::before { background: var(--orange); }
+.sp-preview-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #555; margin-bottom: 8px;
+}
+.sp-mock-line {
+  height: 5px; border-radius: 2px; margin: 4px 0;
+  background: rgba(255,255,255,0.04);
+}
+.sp-mock-table {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 6px;
+}
+.sp-mock-cell {
+  height: 10px; border-radius: 2px; background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.02);
+}
+.sp-mock-cell.header {
+  background: rgba(255,255,255,0.06);
+}
+.sp-mock-hcl {
+  font-family: var(--mono); font-size: 9px; color: #444;
+  background: rgba(0,0,0,0.3); border-radius: 4px; padding: 8px 10px;
+  margin-top: 6px; line-height: 1.6; border: 1px solid rgba(255,255,255,0.03);
+}
+.sp-mock-check {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px; color: #555; margin: 3px 0;
+}
+.sp-check-box {
+  width: 12px; height: 12px; border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: var(--green);
+}
+
+/* Full-width section preview */
+.section-preview.sp-full { grid-column: 1 / -1; }
+
+/* Mini data tables */
+.sp-data-table {
+  width: 100%; border-collapse: collapse; margin-top: 6px;
+  font-family: var(--mono); font-size: 9px;
+}
+.sp-data-table th {
+  text-align: left; padding: 4px 6px; font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: #666; font-size: 8px; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.sp-data-table td {
+  padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,0.025);
+  color: #777; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 0;
+}
+.sp-data-table tr:last-child td { border-bottom: none; }
+.sp-data-table tr:hover td { background: rgba(255,255,255,0.015); }
+.sp-data-table .td-resource { color: var(--cyan); }
+.sp-data-table .td-name { color: #aaa; }
+.sp-data-table .td-cond { color: var(--orange); font-style: italic; }
+.sp-data-table .td-always { color: #555; }
+.sp-data-table .td-var { color: var(--purple); }
+.sp-data-table .td-type { color: #888; }
+.sp-data-table .td-default { color: var(--green); }
+.sp-data-table .td-req { color: var(--pink); font-weight: 600; }
+.sp-data-table .td-control { color: #ccc; }
+.sp-data-table .td-enforcement { color: #888; }
+.sp-data-table .td-ref { color: var(--ice); }
+.sp-data-table .td-no { color: var(--red); font-size: 8px; }
+.sp-data-table .td-yes { color: var(--green); font-size: 8px; }
+.sp-data-table .td-na { color: #444; font-style: italic; }
+.sp-data-table .td-dots { color: #333; }
+.sp-table-fade {
+  position: relative; overflow: hidden;
+}
+.sp-table-fade::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 24px;
+  background: linear-gradient(transparent, rgba(255,255,255,0.02));
+  pointer-events: none;
+}
+
+/* Generated watermark */
+.paper-footer {
+  padding: 16px 32px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.01);
+}
+.paper-generated {
+  font-family: var(--mono); font-size: 10px; color: #333;
+  display: flex; align-items: center; gap: 6px;
+}
+.paper-generated-icon {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: #000; font-weight: bold;
+}
+.paper-file {
+  font-family: var(--mono); font-size: 10px; color: #444;
+  display: flex; align-items: center; gap: 4px;
+}
+
 @media (max-width:900px) {
   #nav { padding: 0 12px; }
   .nav-title { margin-right: 12px; font-size: 9px; letter-spacing: 2px; }
@@ -277,6 +542,8 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
   .bridge-line::after { right: auto; bottom: -4px; top: auto; border: 4px solid transparent; border-top: 5px solid rgba(0,240,255,0.5); border-left: none; }
   .principles { grid-template-columns: 1fr 1fr; }
   .pipeline { flex-wrap: wrap; }
+  .section-previews { grid-template-columns: 1fr; }
+  .section-preview.sp-full { grid-column: 1; }
 }
 </style>
 </head>
@@ -289,6 +556,7 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
     <button class="nav-tab active" data-view="overview">Overview</button>
     <button class="nav-tab" data-view="plan">/tf-plan-v2</button>
     <button class="nav-tab" data-view="implement">/tf-implement</button>
+    <button class="nav-tab" data-view="design">Design Document</button>
   </div>
 </div>
 
@@ -304,7 +572,7 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
   <!-- Mini pipeline -->
   <div class="pipeline">
     <div style="text-align:center">
-      <div class="pipe-phase" style="color:var(--pink);border-color:rgba(255,45,123,0.3)">Understand</div>
+      <div class="pipe-phase" style="color:var(--pink);border-color:rgba(255,45,123,0.3)">Requirements</div>
       <div class="pipe-brace" style="color:var(--pink)">Phase 1</div>
     </div>
     <span class="pipe-arrow">&rarr;</span>
@@ -420,10 +688,9 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
 
   <!-- Principles -->
   <div class="principles">
-    <div class="principle"><strong>P1 Single Artifact</strong>Planning produces one file: design.md. No scattered specs or task files.</div>
+    <div class="principle"><strong>P1 Design</strong>Planning produces one file: design.md. No scattered specs or task files.</div>
     <div class="principle"><strong>P2 Tests Before Code</strong>TDD: .tftest.hcl files are written before the module .tf files they validate.</div>
     <div class="principle"><strong>P3 Security Embedded</strong>Security controls live in the design, not a separate review. Every control maps to a test.</div>
-    <div class="principle"><strong>P4 Research In-Memory</strong>Research findings return to the orchestrator in-memory. Nothing written to disk.</div>
   </div>
 </div>
 
@@ -431,7 +698,7 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
 <div id="view-plan" class="view">
   <div class="view-header">
     <h1>/tf-plan-v2</h1>
-    <p>Phases 1 &amp; 2 &mdash; Understand + Design</p>
+    <p>Phases 1 &amp; 2 &mdash; Requirements + Design</p>
   </div>
 
   <div class="legend">
@@ -448,10 +715,10 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
     <svg id="plan-edges" class="edges" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="flow-container" id="plan-flow">
 
-      <!-- Phase 1: Understand -->
+      <!-- Phase 1: Requirements -->
       <div class="phase-box" data-phase="1">
         <div class="phase-label">Phase 1</div>
-        <div class="phase-title" style="color:var(--pink)">Understand</div>
+        <div class="phase-title" style="color:var(--pink)">Requirements</div>
 
         <div class="step-group">
           <div class="step-group-title">Setup &mdash; Steps 1-4</div>
@@ -684,6 +951,195 @@ body.has-selection .node.dimmed { opacity: var(--dim); }
     <div class="edge-legend-item"><div class="edge-legend-line el-input"></div><div class="edge-legend-tri el-input"></div><span style="color:var(--cyan)">Reads</span></div>
     <div class="edge-legend-item"><div class="edge-legend-line el-output"></div><div class="edge-legend-tri el-output"></div><span style="color:var(--orange)">Writes</span></div>
     <div class="edge-legend-item"><span style="font-size:8px;color:#444;font-style:italic">Click any node for details</span></div>
+  </div>
+</div>
+
+<!-- ==================== DESIGN DOCUMENT VIEW ==================== -->
+<div id="view-design" class="view">
+  <div class="overview-bg"><canvas id="grid-canvas-design"></canvas></div>
+  <div class="design-doc-container">
+    <div class="design-doc-hero">
+      <h1>Generated Design Document</h1>
+      <p>The single artifact produced by /tf-plan-v2</p>
+      <div class="design-badge">
+        <div class="badge-dot"></div>
+        AI-Generated &mdash; specs/{feature}/design.md
+      </div>
+    </div>
+
+    <div class="design-paper">
+      <!-- Gradient top bar via ::before -->
+
+      <!-- Paper header -->
+      <div class="paper-header">
+        <div class="paper-header-title">Module Design: terraform-aws-{module-name}</div>
+        <div class="paper-header-meta">
+          <div class="paper-meta-tag"><span class="meta-label">Branch</span><span class="meta-value">feat/{name}</span></div>
+          <div class="paper-meta-tag"><span class="meta-label">Provider</span><span class="meta-value">aws &gt;= 5.0</span></div>
+          <div class="paper-meta-tag"><span class="meta-label">Terraform</span><span class="meta-value">&gt;= 1.6</span></div>
+          <div class="paper-status"><div class="paper-status-dot"></div>Approved</div>
+        </div>
+      </div>
+
+      <!-- Table of Contents -->
+      <div class="paper-toc">
+        <div class="toc-title">Table of Contents</div>
+        <ul class="toc-list">
+          <li class="toc-item toc-s1">
+            <span class="toc-number">1</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Purpose & Requirements</div>
+              <div class="toc-section-desc">What it does, who consumes it, scope boundary, functional & non-functional reqs</div>
+            </div>
+            <div class="toc-icon">&#9881;</div>
+          </li>
+          <li class="toc-item toc-s2">
+            <span class="toc-number">2</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Resources & Architecture</div>
+              <div class="toc-section-desc">Architectural decisions with rationale, resource inventory table</div>
+            </div>
+            <div class="toc-icon">&#9645;</div>
+          </li>
+          <li class="toc-item toc-s3">
+            <span class="toc-number">3</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Interface Contract</div>
+              <div class="toc-section-desc">Variables (type, default, validation), outputs &mdash; single source of truth</div>
+            </div>
+            <div class="toc-icon">&#8644;</div>
+          </li>
+          <li class="toc-item toc-s4">
+            <span class="toc-number">4</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Security Controls</div>
+              <div class="toc-section-desc">6 domains: encryption, access, IAM, logging, tagging &mdash; CIS/WA references</div>
+            </div>
+            <div class="toc-icon">&#9888;</div>
+          </li>
+          <li class="toc-item toc-s5">
+            <span class="toc-number">5</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Test Scenarios</div>
+              <div class="toc-section-desc">5 groups: defaults, full features, interactions, validation errors, boundaries</div>
+            </div>
+            <div class="toc-icon">&#10003;</div>
+          </li>
+          <li class="toc-item toc-s6">
+            <span class="toc-number">6</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Implementation Checklist</div>
+              <div class="toc-section-desc">4-8 coarse-grained items, each completable in one agent turn</div>
+            </div>
+            <div class="toc-icon">&#9744;</div>
+          </li>
+          <li class="toc-item toc-s7">
+            <span class="toc-number">7</span>
+            <span class="toc-connector"></span>
+            <div class="toc-content">
+              <div class="toc-section-name">Open Questions</div>
+              <div class="toc-section-desc">Deferred decisions with context &mdash; empty if all resolved</div>
+            </div>
+            <div class="toc-icon">?</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section previews -->
+      <div class="section-previews">
+        <!-- Resources & Architecture preview -->
+        <div class="section-preview sp-2">
+          <div class="sp-preview-label">&#167;2 Resource Inventory</div>
+          <div class="sp-table-fade">
+            <table class="sp-data-table">
+              <tr><th>Resource Type</th><th>Logical Name</th><th>Conditional</th><th>Key Config</th></tr>
+              <tr><td class="td-resource">aws_s3_bucket</td><td class="td-name">this</td><td class="td-always">always</td><td>bucket, force_destroy, tags</td></tr>
+              <tr><td class="td-resource">aws_s3_bucket_versioning</td><td class="td-name">this</td><td class="td-always">always</td><td>status = Enabled | Suspended</td></tr>
+              <tr><td class="td-resource">aws_s3_bucket_encryption</td><td class="td-name">this</td><td class="td-always">always</td><td>sse_algorithm = AES256</td></tr>
+              <tr><td class="td-resource">aws_s3_bucket_website</td><td class="td-name">this</td><td class="td-cond">enable_website</td><td>index_document, error_document</td></tr>
+              <tr><td class="td-resource">aws_s3_bucket_policy</td><td class="td-name">this</td><td class="td-cond">enable_website</td><td>TLS enforce + public read</td></tr>
+              <tr><td class="td-resource">aws_s3_bucket_lifecycle</td><td class="td-name">this</td><td class="td-cond">local.enable_lifecycle</td><td>GLACIER transition</td></tr>
+              <tr><td class="td-dots">...</td><td class="td-dots"></td><td class="td-dots"></td><td class="td-dots"></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interface Contract preview -->
+        <div class="section-preview sp-3">
+          <div class="sp-preview-label">&#167;3 Interface Contract</div>
+          <div class="sp-table-fade">
+            <table class="sp-data-table">
+              <tr><th>Variable</th><th>Type</th><th>Required</th><th>Default</th><th>Validation</th></tr>
+              <tr><td class="td-var">bucket_name</td><td class="td-type">string</td><td class="td-req">Yes</td><td class="td-dots">&mdash;</td><td>regex ^[a-z0-9]...</td></tr>
+              <tr><td class="td-var">environment</td><td class="td-type">string</td><td class="td-req">Yes</td><td class="td-dots">&mdash;</td><td>dev | staging | prod</td></tr>
+              <tr><td class="td-var">versioning_enabled</td><td class="td-type">bool</td><td>No</td><td class="td-default">true</td><td class="td-dots">&mdash;</td></tr>
+              <tr><td class="td-var">enable_website</td><td class="td-type">bool</td><td>No</td><td class="td-default">true</td><td class="td-dots">&mdash;</td></tr>
+              <tr><td class="td-var">enable_lifecycle</td><td class="td-type">bool</td><td>No</td><td class="td-default">null</td><td>computed default</td></tr>
+              <tr><td class="td-var">block_public_access</td><td class="td-type">bool</td><td>No</td><td class="td-default">true</td><td class="td-dots">&mdash;</td></tr>
+              <tr><td class="td-dots">...</td><td class="td-dots"></td><td class="td-dots"></td><td class="td-dots"></td><td class="td-dots"></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Security Controls preview -->
+        <div class="section-preview sp-4 sp-full">
+          <div class="sp-preview-label">&#167;4 Security Controls</div>
+          <div class="sp-table-fade">
+            <table class="sp-data-table">
+              <tr><th>Control</th><th>Enforcement</th><th>Configurable?</th><th>Reference</th></tr>
+              <tr><td class="td-control">Encryption at rest</td><td class="td-enforcement">AES256 (SSE-S3) on all objects</td><td class="td-no">No</td><td class="td-ref">CIS 2.1.2</td></tr>
+              <tr><td class="td-control">Encryption in transit</td><td class="td-enforcement">TLS deny on SecureTransport=false</td><td class="td-no">No</td><td class="td-ref">CIS 2.1.1</td></tr>
+              <tr><td class="td-control">Public access</td><td class="td-enforcement">4 block flags, auto-relax for website</td><td class="td-yes">Yes</td><td class="td-ref">CIS 2.1.4</td></tr>
+              <tr><td class="td-control">IAM least privilege</td><td class="td-enforcement">s3:GetObject only on object ARNs</td><td class="td-no">No</td><td class="td-ref">WA SEC03-BP06</td></tr>
+              <tr><td class="td-control">Tagging</td><td class="td-enforcement">Name, ManagedBy, Env, Owner, Cost</td><td class="td-yes">Yes</td><td class="td-ref">WA COST02-BP03</td></tr>
+              <tr><td class="td-control">Ownership</td><td class="td-enforcement">BucketOwnerEnforced (ACLs off)</td><td class="td-no">No</td><td class="td-ref">WA SEC03-BP07</td></tr>
+              <tr><td class="td-dots">...</td><td class="td-dots"></td><td class="td-dots"></td><td class="td-dots"></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Test Scenarios preview -->
+        <div class="section-preview sp-5">
+          <div class="sp-preview-label">&#167;5 Test Scenarios</div>
+          <div class="sp-mock-hcl">
+            <span style="color:var(--purple)">run</span> <span style="color:#666">"secure_defaults"</span> {<br>
+            &nbsp;&nbsp;<span style="color:var(--cyan)">command</span> = <span style="color:var(--green)">plan</span><br>
+            &nbsp;&nbsp;<span style="color:var(--purple)">assert</span> {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;condition = <span style="color:#666">...</span><br>
+            &nbsp;&nbsp;}<br>
+            }
+          </div>
+        </div>
+
+        <!-- Implementation Checklist preview -->
+        <div class="section-preview sp-6 sp-full">
+          <div class="sp-preview-label">&#167;6 Implementation Checklist</div>
+          <div class="sp-mock-check"><div class="sp-check-box">&#10003;</div><span style="color:var(--green)">A: Scaffold</span> <span style="color:#333">&mdash; file structure, versions.tf, variables, base resource</span></div>
+          <div class="sp-mock-check"><div class="sp-check-box">&#10003;</div><span style="color:var(--green)">B: Security core</span> <span style="color:#333">&mdash; encryption, access controls, policy</span></div>
+          <div class="sp-mock-check"><div class="sp-check-box" style="color:#333;border-color:rgba(255,255,255,0.06)">&#8212;</div><span>C: Feature set</span> <span style="color:#333">&mdash; conditional resources, dynamic blocks</span></div>
+          <div class="sp-mock-check"><div class="sp-check-box" style="color:#333;border-color:rgba(255,255,255,0.06)">&#8212;</div><span>D: Examples</span> <span style="color:#333">&mdash; basic/ and complete/</span></div>
+          <div class="sp-mock-check"><div class="sp-check-box" style="color:#333;border-color:rgba(255,255,255,0.06)">&#8212;</div><span>E: Tests</span> <span style="color:#333">&mdash; .tftest.hcl from scenarios</span></div>
+          <div class="sp-mock-check"><div class="sp-check-box" style="color:#333;border-color:rgba(255,255,255,0.06)">&#8212;</div><span>F: Polish</span> <span style="color:#333">&mdash; README, formatting, validation</span></div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="paper-footer">
+        <div class="paper-generated">
+          <div class="paper-generated-icon">&#9889;</div>
+          Generated by /tf-plan-v2
+        </div>
+        <div class="paper-file">
+          &#128196; specs/{feature}/design.md
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -962,27 +1418,31 @@ window.addEventListener('scroll', () => { if (selectedId && activeVP) drawEdges(
 
 /* Animated grid background */
 (function() {
-  const canvas = document.getElementById('grid-canvas'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); let w, h;
-  const gap = 48;
-  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  let time = 0;
-  function draw() {
-    time += 0.003; ctx.clearRect(0, 0, w, h);
-    const cols = Math.ceil(w / gap) + 1, rows = Math.ceil(h / gap) + 1;
-    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-      const x = i * gap, y = j * gap;
-      const d = Math.sqrt((x - w / 2) ** 2 + (y - h / 2) ** 2);
-      const pulse = Math.sin(d * 0.008 - time * 2) * 0.5 + 0.5;
-      ctx.fillStyle = `rgba(0,240,255,${0.015 + pulse * 0.025})`;
-      ctx.fillRect(x - 0.5, y - 0.5, 1, 1);
+  function initGrid(canvasId) {
+    const canvas = document.getElementById(canvasId); if (!canvas) return;
+    const ctx = canvas.getContext('2d'); let w, h;
+    const gap = 48;
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    let time = 0;
+    function draw() {
+      time += 0.003; ctx.clearRect(0, 0, w, h);
+      const cols = Math.ceil(w / gap) + 1, rows = Math.ceil(h / gap) + 1;
+      for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+        const x = i * gap, y = j * gap;
+        const d = Math.sqrt((x - w / 2) ** 2 + (y - h / 2) ** 2);
+        const pulse = Math.sin(d * 0.008 - time * 2) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(0,240,255,${0.015 + pulse * 0.025})`;
+        ctx.fillRect(x - 0.5, y - 0.5, 1, 1);
+      }
+      for (let j = 0; j < rows; j++) { ctx.beginPath(); ctx.moveTo(0, j * gap); ctx.lineTo(w, j * gap); ctx.strokeStyle = 'rgba(0,240,255,0.018)'; ctx.lineWidth = 0.5; ctx.stroke(); }
+      for (let i = 0; i < cols; i++) { ctx.beginPath(); ctx.moveTo(i * gap, 0); ctx.lineTo(i * gap, h); ctx.strokeStyle = 'rgba(0,240,255,0.018)'; ctx.lineWidth = 0.5; ctx.stroke(); }
+      requestAnimationFrame(draw);
     }
-    for (let j = 0; j < rows; j++) { ctx.beginPath(); ctx.moveTo(0, j * gap); ctx.lineTo(w, j * gap); ctx.strokeStyle = 'rgba(0,240,255,0.018)'; ctx.lineWidth = 0.5; ctx.stroke(); }
-    for (let i = 0; i < cols; i++) { ctx.beginPath(); ctx.moveTo(i * gap, 0); ctx.lineTo(i * gap, h); ctx.strokeStyle = 'rgba(0,240,255,0.018)'; ctx.lineWidth = 0.5; ctx.stroke(); }
-    requestAnimationFrame(draw);
+    draw();
   }
-  draw();
+  initGrid('grid-canvas');
+  initGrid('grid-canvas-design');
 })();
 </script>
 </body>
