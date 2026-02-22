@@ -1,144 +1,101 @@
-# SDD System Design Principles
+# AGENT.md
 
-**Scope**: Rules for building the workflow system — agents, skills, orchestrator, templates, and repo structure. This governs the developer creating the tooling, not the user running it.
+# AI-Assisted Terraform Module Development (SDD)
 
-**Authority**: If a design choice during development conflicts with a principle here, the principle wins. No exceptions without removing the principle first.
+AI-assisted development of enterprise-ready Terraform modules via spec-driven development. One design document replaces five artifacts. Tests before code. Security embedded in every phase.
 
----
+## Core Principles
 
-## P1. Single Artifact Output
+1. **Security-First**: All decisions prioritize security. No workarounds for security requirements. Constitution MUST rules are non-negotiable.
+2. **Module-First**: Author well-structured modules using raw resources with secure defaults. Follow standard module structure (`examples/`, `tests/`, `modules/`).
+3. **Single-Artifact Design**: Requirements flow into one `design.md` that replaces spec, plan, contracts, data model, and tasks. One source of truth eliminates cross-artifact contradictions.
+4. **MCP-First**: Use MCP tools for AWS documentation and provider docs before general knowledge. Research resource behavior before writing code.
+5. **TDD-First**: Tests before code. Write `.tftest.hcl` files from design scenarios, then implement the module to pass them. All tests green = implementation complete.
+6. **Parallel Where Safe**: Independent tasks run concurrently. MCP-dependent tasks run sequentially.
+7. **Quality Gates**: CRITICAL findings block progression. Reviews use evidence-based findings with citations.
 
-The entire planning phase produces one file: `specs/{FEATURE}/design.md`.
+## Workflow
 
-- Do not build agents that produce separate specification, plan, contract, data model, or task files.
-- Do not build templates with sections that restate information from other sections. Every variable name, resource entry, validation rule, and output appears in exactly one table.
-- Do not build a consistency analysis agent or skill. Multiple artifacts can contradict each other. One file cannot contradict itself.
-- Do not build a remediation cycle. There is nothing to remediate.
+See `tf-plan` SKILL.md (`.claude/skills/tf-plan.md`) for the full 4-phase workflow: Understand, Design, Build+Test, Validate. See `tf-research-heuristics` skill for MCP tool priority and research strategies.
 
-**Test**: If you can grep `design.md` for a variable name and get more than one row across all tables, the template is wrong.
+## Directory Layout
 
----
+See constitution Section 3.2 (`.foundations/memory/constitution.md`) for the canonical file organization rules and directory map.
 
-## P2. Tests Before Code
+## Agent Architecture
 
-The system writes `.tftest.hcl` files before the module `.tf` files they validate.
+Agents are subagents dispatched by orchestrator skills. Each agent has a single responsibility. Most agents read inputs from disk and write outputs to disk; research agents return findings in-memory to the orchestrator.
 
-- Build the test-writer agent (or step) to run before the implementation agent. Not after. Not in parallel.
-- Build the orchestrator to enforce this order: design.md exists -> tests exist -> implementation starts.
-- Do not build a separate "testing phase" that runs after implementation. Tests grow alongside code. The final validation phase confirms they all pass — it does not create them.
-- Build test scenarios as a mandatory section in the design.md template. If the section is empty, the design is incomplete and implementation cannot start.
+| Agent              | Model  | Purpose                                                             | Input                                                        | Output                                                      |
+| ------------------ | ------ | ------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| `sdd-design`       | opus   | Produce design.md from clarified requirements and research findings | Requirements + research + constitution + template            | `specs/{FEATURE}/design.md`                                 |
+| `sdd-research`     | opus   | Answer one specific research question using MCP tools               | Feature path + research question                             | Research findings (returned to orchestrator, not persisted) |
+| `tf-test-writer`   | sonnet | Convert design.md test scenarios into `.tftest.hcl` files           | `specs/{FEATURE}/design.md` Section 5                        | `tests/*.tftest.hcl`                                        |
+| `tf-task-executor` | opus   | Implement one checklist item from design.md                         | `specs/{FEATURE}/design.md` + checklist item + existing code | Modified `.tf` files                                        |
 
-**Test**: Remove all `.tf` files except `versions.tf` and `variables.tf`. `terraform test` should still parse the test files without syntax errors.
+## Skill Architecture
 
----
+Skills provide domain knowledge and orchestration logic. They are loaded into agent context as needed.
 
-## P3. Security Embedded in Design
+### Orchestrators
 
-Do not build a separate security review agent or phase.
+| Skill           | Purpose                                                                      |
+| --------------- | ---------------------------------------------------------------------------- |
+| `tf-plan`       | 4-phase workflow entry point: Understand -> Design -> Build+Test -> Validate |
+| `tf-implement`  | TDD-aware implementation: write tests first, run after each phase            |
+| `tf-e2e-tester` | Automated E2E test harness: runs full workflow cycle with test defaults      |
 
-- Build the design agent to include security research (MCP calls to AWS docs, CIS benchmarks, provider security attributes) as part of its own execution.
-- Build the design.md template with a mandatory Security Controls table. This table is the security specification — no separate review document feeds into it.
-- Build each security control row to require a mapping to at least one test assertion. The orchestrator validates this mapping before approving the design.
-- Build the Phase 1 clarification step to always include a security-defaults question. This is not optional. Skipping this question has caused critical findings (hardcoded vs. configurable public access).
+### Domain Knowledge — User-Invocable
 
-**Test**: Search the entire repo for an agent or skill file containing "security-review" or "security-advisor" as a standalone phase. Finding one means the system violates this principle.
+| Skill                        | Purpose                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| `tf-architecture-patterns`   | Patterns for module architecture -- resource composition, conditional creation, policy composition |
+| `tf-implementation-patterns` | Patterns for Terraform code -- locals, for_each, dynamic blocks, lifecycle                         |
+| `terraform-test`             | Terraform test patterns -- plan-only, conditional resources, validation errors, mocks              |
+| `terraform-style-guide`      | Code style conventions -- naming, formatting, file organization                                    |
 
----
+### Domain Knowledge — Background
 
-## P4. Research Feeds Design, Not Files
+| Skill                    | Purpose                                                                     |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `tf-domain-taxonomy`     | 8-category taxonomy for scanning requirements and identifying gaps          |
+| `tf-research-heuristics` | Strategies for MCP research -- what to look for, which tools, in what order |
+| `tf-report-template`     | Validation results summary template                                         |
+| `tf-security-baselines`  | CIS/NIST security baselines and risk rating framework                       |
 
-Do not build research agents that write output to disk.
+## Prerequisites
 
-- Build the orchestrator to run MCP research (provider docs, AWS docs, registry patterns) during Phase 1 and pass results directly to the design agent as input context.
-- Do not create a `research/` directory, `research-*.md` files, or any intermediate research artifacts. Persisted research files cause terminology drift — variable names in research files diverge from variable names in the spec.
-- Build the design.md template to capture research outcomes as citations in the Architectural Decisions section. The citation (provider doc version, AWS URL) is the audit trail.
+See constitution Section 2 (`.foundations/memory/constitution.md`) for environment prerequisites (CLI tools, tokens, MCP servers).
 
-**Test**: After a complete workflow run, `ls specs/{FEATURE}/` should contain exactly one file: `design.md`. Nothing else.
+## Testing Strategy
 
----
+See constitution Section 6.3 (`.foundations/memory/constitution.md`) for TDD rules and test file conventions. See `tf-implement` skill for the test-first implementation workflow.
 
-## P5. Agents Have One Job
+## Operational Notes
 
-Each agent takes one defined input and produces one defined output.
+### GitHub Enterprise Authentication
 
-- Do not build agents that read outputs from other agents' files. The orchestrator passes context — agents do not cross-reference each other.
-- Do not build agents that produce multiple files. One agent, one output path.
-- Do not build the orchestrator to read agent output files back into its own context. The orchestrator verifies file existence (glob), not content. Downstream agents read their own inputs.
+For GHE repositories:
 
-| Agent         | Input                                                     | Output                      |
-| ------------- | --------------------------------------------------------- | --------------------------- |
-| Design agent  | Requirements text + research findings + constitution path | `specs/{FEATURE}/design.md` |
-| Test writer   | `specs/{FEATURE}/design.md` Sections 2, 3, 5              | `versions.tf`, `variables.tf`, `tests/*.tftest.hcl` |
-| Task executor | `specs/{FEATURE}/design.md` + checklist item              | Modified `.tf` files        |
+- **Authentication**: `gh auth login --hostname <hostname>` is required. Standard `gh auth login` only authenticates against github.com.
+- **Operations**: Most `gh` commands (issue, pr, repo, etc.) do NOT accept `--hostname` flag. Use `GH_HOST` environment variable instead:
+  ```bash
+  export GH_HOST=github.enterprise.com
+  gh issue create --title "Bug report"
+  # Or inline:
+  GH_HOST=github.enterprise.com gh pr create --title "Feature"
+  ```
 
-- If you find yourself building an agent that needs to read two other agents' outputs and merge them, the upstream agents are wrong — merge them into one.
+### Agent Output Persistence
 
-**Test**: Draw the data flow between agents. If any arrow goes agent-to-agent without passing through the orchestrator or through `design.md`, the architecture is wrong.
+Most agents have the Write tool and persist their own output artifacts to disk. The orchestrator verifies that expected output files exist after each agent dispatch. **Exception**: Research agents return findings in-memory (~500 tokens each) — the orchestrator collects these and passes them to the design agent via `$ARGUMENTS`.
 
----
+## Context Management
 
-## P6. The Orchestrator Directs, Does Not Accumulate
+1. **NEVER call TaskOutput** to read subagent results — EXCEPT for research agents, whose findings (~500 tokens each) are collected and forwarded to the design agent. All other agents write artifacts to disk.
+2. **Verify file existence with Glob** after each agent completes -- do NOT read file contents into the orchestrator.
+3. **Downstream agents read their own inputs from disk.** The orchestrator passes the FEATURE path plus scope via `$ARGUMENTS`. For the design agent, `$ARGUMENTS` also includes research findings collected from research agents.
+4. **Research agents: parallel foreground Task calls** (NOT `run_in_background`). Launch ALL research agents in a single message with multiple Task tool calls, then collect their in-memory findings to pass to the design agent.
+5. **Minimal $ARGUMENTS**: Only pass the FEATURE path + a specific question or scope. The one exception is research findings passed to the design agent (~2000 tokens total for 4 research agents).
 
-The orchestrator skill manages phase sequencing, file verification, and user interaction. It does not accumulate content.
-
-- Do not build the orchestrator to read file contents from agent outputs. It checks file existence. That is all.
-- Do not build the orchestrator to pass large blocks of text between phases. It passes file paths and short scope descriptions.
-- Build the orchestrator with exactly 4 phases: Understand, Design, Build+Test, Validate. Do not add phases. If something feels like it needs a new phase, it belongs inside an existing one.
-- Build the orchestrator to stop on exactly 3 conditions: missing prerequisites (Phase 1), user rejects design (Phase 2), security test failures (Phase 3). Everything else is recoverable without stopping.
-
-**Test**: Count the number of `Read` tool calls the orchestrator makes against `specs/` files. The target is zero. File existence checks use `Glob`.
-
----
-
-## P7. The Design Template Is the Contract
-
-The design.md template defines what the design agent must produce. It is the single enforced schema.
-
-- Build the template with mandatory sections. No section is optional. Empty tables are permitted (e.g., no CORS resources); missing sections are not.
-- Build the template so each section is self-contained. No section references another section by line number or says "see above."
-- Do not build the template with more than 7 sections: Purpose & Requirements, Resources & Architecture, Interface Contract, Security Controls, Test Scenarios, Implementation Checklist, Open Questions.
-- Build the Implementation Checklist section to contain 4-8 items. Not 34 tasks. Each item is one logical unit of work — "Scaffold + versions.tf + variables + base resource" is one item.
-
-**Test**: A developer unfamiliar with the system should be able to read `design.md` alone and know everything needed to build and test the module. If they need to open a second file for context, the template is incomplete.
-
----
-
-## P8. Phase Order Is Fixed
-
-The 4 phases execute in strict sequence. No phase is skippable. No phase runs out of order.
-
-```
-Understand -> Design -> Build+Test -> Validate
-```
-
-- Do not build shortcuts that skip Design and jump to Build. Even for "simple" modules.
-- Do not build the Validate phase to run before Build+Test completes. Validation confirms the finished module, not a partial one.
-- Do not build parallel execution across phases. Parallelism is permitted within a phase (multiple MCP research calls in Phase 1, multiple validation tools in Phase 4). Never across phases.
-
-**Test**: Remove any single phase from the orchestrator. The system should fail clearly, not silently produce an incomplete result.
-
----
-
-## P9. The Constitution Is Separate
-
-Do not merge the module constitution into the workflow system.
-
-- The constitution defines code standards: file structure, naming, security defaults, provider constraints, testing coverage. It governs what correct module code looks like.
-- These principles define system architecture: single artifact, test-first, embedded security, agent boundaries. They govern how the tooling is built.
-- Build the design agent to receive the constitution as a reference input (file path). The agent applies it during design. The orchestrator does not interpret it.
-- Do not duplicate constitution rules into agent prompts, skill files, or templates. Point to the constitution. One source.
-
-**Test**: Change a constitution rule (e.g., the minimum Terraform version). Exactly one file should need updating. If agent prompts or templates also need updating, the rule is duplicated.
-
----
-
-## P10. Build for Deletion
-
-Every component in the system should be removable without breaking unrelated components.
-
-- Build agents as independent units. Removing the test-writer agent means tests are written inline by the implementer — the orchestrator and design agent still function.
-- Build skills with no hard dependencies on other skills. Each skill file is self-contained.
-- Do not build shared state between agents beyond `design.md` and the module's `.tf` files.
-- Do not build helper utilities, shared libraries, or abstraction layers that multiple agents depend on. If two agents need the same logic, each agent contains its own copy. Duplication in agent prompts is acceptable. Coupling between agents is not.
-
-**Test**: Delete any single agent file from `.claude/agents/`. The orchestrator should degrade gracefully (skip that step or inline the work), not crash.
+**Remember**: Always verify with MCP tools. Security is non-negotiable.
