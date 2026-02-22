@@ -9,9 +9,9 @@ argument-hint: "No arguments — reference guide for Terraform test patterns"
 
 Terraform's built-in testing framework enables module authors to validate that configuration updates don't introduce breaking changes. Tests execute against temporary resources, protecting existing infrastructure and state files.
 
-## V2 TDD Workflow
+## TDD Workflow
 
-In v2, the SDD workflow adopts a **test-first approach** for Terraform modules. Tests are the starting point, not an afterthought.
+The SDD workflow adopts a **test-first approach** for Terraform modules. Tests are the starting point, not an afterthought.
 
 ### Test-First Principle
 
@@ -66,9 +66,9 @@ my-module/
     └── validation.tftest.hcl
 ```
 
-## V2 Test Patterns
+## Test Patterns
 
-These six patterns form the core testing vocabulary for v2 modules.
+These six patterns form the core testing vocabulary for modules.
 
 ### 1. Plan-Only Testing
 

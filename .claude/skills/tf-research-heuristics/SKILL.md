@@ -6,9 +6,9 @@ user-invocable: false
 
 # Terraform Research Heuristics
 
-## V2 Parallel Research Pattern
+## Parallel Research Pattern
 
-In the v2 workflow, Phase 1 (Understand) spawns **3-4 parallel `sdd-research` agents**, each answering ONE research question. Each agent uses these heuristics independently. A typical module launches agents covering:
+In Phase 1 (Understand) spawns **3-4 parallel `sdd-research` agents**, each answering ONE research question. Each agent uses these heuristics independently. A typical module launches agents covering:
 
 | Agent Focus | Primary MCP Tools | Question Type |
 |-------------|-------------------|---------------|
