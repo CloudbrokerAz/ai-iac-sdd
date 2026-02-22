@@ -2,13 +2,13 @@
 
 # AI-Assisted Terraform Module Development (SDD)
 
-AI-assisted development of enterprise-ready Terraform modules via spec-driven development. One design document replaces five artifacts. Tests before code. Security embedded in every phase.
+AI-assisted development of enterprise-ready Terraform modules via spec-driven development. Tests before code. Security embedded in every phase.
 
 ## Core Principles
 
 1. **Security-First**: All decisions prioritize security. No workarounds for security requirements. Constitution MUST rules are non-negotiable.
 2. **Module-First**: Author well-structured modules using raw resources with secure defaults. Follow standard module structure (`examples/`, `tests/`, `modules/`).
-3. **Single-Artifact Design**: Requirements flow into one `design.md` that replaces spec, plan, contracts, data model, and tasks. One source of truth eliminates cross-artifact contradictions.
+3. **Single-Artifact Design**: All requirements, resources, interfaces, security controls, and test scenarios live in one `design.md`. One source of truth per feature.
 4. **MCP-First**: Use MCP tools for AWS documentation and provider docs before general knowledge. Research resource behavior before writing code.
 5. **TDD-First**: Tests before code. Write `.tftest.hcl` files from design scenarios, then implement the module to pass them. All tests green = implementation complete.
 6. **Parallel Where Safe**: Independent tasks run concurrently. MCP-dependent tasks run sequentially.
