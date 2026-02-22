@@ -1,11 +1,11 @@
 ---
 name: tf-implement
-description: SDD v2 Phases 3-4. TDD implementation and validation from an existing design.md. Writes tests first, builds module, validates, creates PR.
+description: SDD Phases 3-4. TDD implementation and validation from an existing design.md. Writes tests first, builds module, validates, creates PR.
 user-invocable: true
 argument-hint: "[feature-name] - Implement from existing specs/{feature}/design.md"
 ---
 
-# SDD v2 — Implement
+# SDD — Implement
 
 Builds and validates a Terraform module from `specs/{FEATURE}/design.md` using TDD.
 
@@ -16,7 +16,7 @@ Checkpoint after each phase: `bash .foundations/scripts/bash/checkpoint-commit.s
 
 1. Resolve `$FEATURE` from `$ARGUMENTS` or current git branch name.
 2. Run `bash .foundations/scripts/bash/validate-env.sh --json`. Stop if `gate_passed=false`.
-3. Verify `specs/{FEATURE}/design.md` exists via Glob. Stop if missing — tell user to run `/tf-plan-v2` first.
+3. Verify `specs/{FEATURE}/design.md` exists via Glob. Stop if missing — tell user to run `/tf-plan` first.
 4. Find `$ISSUE_NUMBER` from `$ARGUMENTS` or `gh issue list --search "$FEATURE"`.
 
 ## Phase 3: Build + Test
