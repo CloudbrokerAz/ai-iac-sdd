@@ -20,10 +20,10 @@ Non-negotiable rules for all code generation live in the constitution. Read it b
 
 ## Workflow Entry Points
 
-| Command | Purpose |
-|---------|---------|
-| `/tf-plan` | Full 4-phase workflow: Clarify, Design, Implement (TDD), Validate |
-| `/tf-implement` | Implementation only — starts from an existing `design.md` |
+| Command         | Purpose                                                           |
+| --------------- | ----------------------------------------------------------------- |
+| `/tf-plan`      | Full 4-phase workflow: Clarify, Design, Implement (TDD), Validate |
+| `/tf-implement` | Implementation only — starts from an existing `design.md`         |
 
 ## Design Template
 
@@ -33,10 +33,6 @@ When creating design documents, use the canonical template at `.foundations/temp
 
 - Workflow conventions are defined in the orchestrator skills (`tf-plan`, `tf-implement`). Follow AGENTS.md `## Context Management` for subagent rules.
 - Key scripts: `validate-env.sh` (environment checks), `post-issue-progress.sh` (GitHub updates), `checkpoint-commit.sh` (git automation) — all in `.foundations/scripts/bash/`.
-
-## Additional Component-Specific Guidance
-
-For detailed module-specific implementation guides, check for AGENTS.md files in subdirectories throughout the project.
 
 ## Updating AGENTS.md Files
 
