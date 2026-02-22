@@ -1,7 +1,7 @@
 name: "Terraform Module Request"
-description: "Request development of a new Terraform module using SDD v2 workflow"
+description: "Request development of a new Terraform module using SDD workflow"
 title: "[MODULE REQUEST] "
-labels: ["module-request", "sdd-v2"]
+labels: ["module-request", "sdd"]
 assignees: []
 body:
   - type: markdown
@@ -9,7 +9,7 @@ body:
       value: |
         # Terraform Module Request
 
-        Use this template to request a new Terraform module built with the SDD v2 workflow.
+        Use this template to request a new Terraform module built with the SDD workflow.
         Fill in as much detail as possible — required fields are marked. Optional fields help
         the agent produce a more accurate specification on the first pass.
 
