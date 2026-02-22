@@ -223,7 +223,7 @@ No other files, no shared state, no intermediate research artifacts.
 
 1. **Single artifact output (P1)**: The entire planning phase produces exactly one file: `specs/{FEATURE}/design.md`. No research files, no separate specs, no intermediate artifacts.
 
-2. **Research feeds design, not files (P4)**: The sdd-research agents return findings in-memory (<500 tokens each). The orchestrator passes these to sdd-design via `$ARGUMENTS`. Nothing is written to disk. This prevents terminology drift from intermediate research artifacts.
+2. **Research feeds design, not files (P4)**: The sdd-research agents return findings in-memory. The orchestrator passes these to sdd-design via `$ARGUMENTS`. Nothing is written to disk. This prevents terminology drift from intermediate research artifacts.
 
 3. **Security embedded in design (P3)**: Security is woven through at three points:
    - Step 5: Ambiguity scan flags security-configurable features

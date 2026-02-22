@@ -40,7 +40,7 @@ Answer ONE research question per instance using AWS documentation, provider docs
 
 ## Output
 
-Return structured research findings (<500 tokens) to the orchestrator. Findings are returned in-memory — do NOT write to disk. The orchestrator will pass them to the design agent via `$ARGUMENTS`.
+Return concise research findings to the orchestrator. Findings are returned in-memory — do NOT write to disk. The orchestrator will pass them to the design agent via `$ARGUMENTS`.
 
 ```markdown
 ## Research: {Question}
@@ -80,7 +80,7 @@ Return structured research findings (<500 tokens) to the orchestrator. Findings 
 - **AWS docs first**: Start with AWS documentation to understand the service behavior and best practices
 - **Provider docs second**: Use provider docs to identify resource types, arguments, and attributes
 - **Registry for patterns**: Study public and private registry modules for design patterns and conventions
-- **Return output**: Format findings as structured text (<500 tokens) and return as agent output — do NOT write to disk
+- **Return output**: Format findings as concise structured text and return as agent output — do NOT write to disk
 - **MUST run in foreground** (uses MCP tools)
 
 ## Examples
