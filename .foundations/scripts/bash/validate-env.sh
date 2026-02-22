@@ -146,28 +146,32 @@ fi
 
 # WARN: TFLint
 if command -v tflint &> /dev/null; then
-    add_check "TFLINT" "WARN" "true" "INSTALLED"
+    TFLINT_VERSION=$(tflint --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+    add_check "TFLINT" "WARN" "true" "INSTALLED (v${TFLINT_VERSION})"
 else
     add_check "TFLINT" "WARN" "false" "NOT INSTALLED — code quality linting unavailable"
 fi
 
 # WARN: pre-commit
 if command -v pre-commit &> /dev/null; then
-    add_check "PRE_COMMIT" "WARN" "true" "INSTALLED"
+    PRE_COMMIT_VERSION=$(pre-commit --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    add_check "PRE_COMMIT" "WARN" "true" "INSTALLED (v${PRE_COMMIT_VERSION})"
 else
     add_check "PRE_COMMIT" "WARN" "false" "NOT INSTALLED — git hooks unavailable"
 fi
 
 # WARN: Trivy
 if command -v trivy &> /dev/null; then
-    add_check "TRIVY" "WARN" "true" "INSTALLED"
+    TRIVY_VERSION=$(trivy --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    add_check "TRIVY" "WARN" "true" "INSTALLED (v${TRIVY_VERSION})"
 else
     add_check "TRIVY" "WARN" "false" "NOT INSTALLED — security scanning unavailable. See: https://aquasecurity.github.io/trivy"
 fi
 
 # WARN: terraform-docs
 if command -v terraform-docs &> /dev/null; then
-    add_check "TERRAFORM_DOCS" "WARN" "true" "INSTALLED"
+    TFDOCS_VERSION=$(terraform-docs --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    add_check "TERRAFORM_DOCS" "WARN" "true" "INSTALLED (v${TFDOCS_VERSION})"
 else
     add_check "TERRAFORM_DOCS" "WARN" "false" "NOT INSTALLED — documentation generation unavailable. See: https://terraform-docs.io"
 fi
