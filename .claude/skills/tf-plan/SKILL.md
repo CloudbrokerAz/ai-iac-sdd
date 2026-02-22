@@ -16,7 +16,7 @@ Post progress at key steps: `bash .foundations/scripts/bash/post-issue-progress.
 1. Run `bash .foundations/scripts/bash/validate-env.sh --json`. Stop if `gate_passed=false`.
 2. Parse `$ARGUMENTS` for module name, provider, and description. Ask via `AskUserQuestion` if incomplete.
 3. Create GitHub issue: read `.foundations/templates/issue-body-template.md`, fill in the placeholders with parsed requirements, and run `gh issue create --title "Module: {name}" --body "$FILLED_BODY"`. Capture `$ISSUE_NUMBER`. Update the issue body again after Step 6 (clarification) to include security decisions and scope boundaries.
-4. Create feature branch via `bash .foundations/scripts/bash/create-new-feature.sh`. Capture `$FEATURE`.
+4. Create feature branch: `bash .foundations/scripts/bash/create-new-feature.sh --json --issue $ISSUE_NUMBER --short-name "<module-name>" "<feature description>"`. Parse the JSON output to capture `$BRANCH_NAME` as `$FEATURE` and `$DESIGN_FILE`.
 5. Scan requirements against the `tf-domain-taxonomy` 8-category taxonomy. Always flag security-configurable features.
 6. Ask up to 4 clarification questions via `AskUserQuestion`. Must include a security-defaults question.
 7. Launch 3-4 concurrent `sdd-research` subagents for provider docs, AWS best practices, registry patterns, and edge cases. Wait for all to complete.
