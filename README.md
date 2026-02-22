@@ -1,6 +1,6 @@
-# AI-Assisted Terraform Module Development (SDD v2)
+# AI-Assisted Terraform Module Development (SDD)
 
-A template repository for AI-assisted Terraform module development using spec-driven development (SDD v2). The workflow compresses module authoring into four phases -- Understand, Design, Build+Test, and Validate -- driven by a single design document. One `design.md` replaces the five planning artifacts of v1, tests are written before module code, and security controls are embedded in every phase rather than bolted on as a separate review.
+A template repository for AI-assisted Terraform module development using spec-driven development (SDD). The workflow compresses module authoring into four phases -- Understand, Design, Build+Test, and Validate -- driven by a single design document. One `design.md` replaces separate spec, plan, contract, data model, and task files, tests are written before module code, and security controls are embedded in every phase rather than bolted on as a separate review.
 
 ## Workflow Overview
 
@@ -31,7 +31,7 @@ gh auth status        # GitHub CLI authenticated
 echo $TFE_TOKEN       # HCP Terraform token set
 
 # Run the full workflow (Understand -> Design -> Build+Test -> Validate)
-/tf-plan-v2 my-module aws - Creates an S3 bucket with encryption and versioning
+/tf-plan my-module aws - Creates an S3 bucket with encryption and versioning
 
 # Or implement from an existing design document
 /tf-implement my-module
@@ -61,7 +61,7 @@ echo $TFE_TOKEN       # HCP Terraform token set
 │   │   ├── tf-test-writer.md             # Converts design scenarios to .tftest.hcl
 │   │   └── tf-task-executor.md           # Implements one checklist item from design.md
 │   └── skills/                           # Skill definitions (8 skills + 3 orchestrators)
-│       ├── tf-plan-v2/                   # Orchestrator: full 4-phase workflow
+│       ├── tf-plan/                   # Orchestrator: full 4-phase workflow
 │       ├── tf-implement/                 # Orchestrator: TDD-aware implementation
 │       ├── tf-e2e-tester/               # Orchestrator: automated E2E test harness
 │       ├── tf-domain-taxonomy/           # 8-category requirement scanning
@@ -98,7 +98,7 @@ echo $TFE_TOKEN       # HCP Terraform token set
 
 ## Key Concepts
 
-- **Single Design Document** -- One `design.md` replaces the five v1 artifacts (spec, plan, contracts, data model, tasks). Variable lists appear once, resource inventories appear once, and validation rules appear once. There is nothing to get inconsistent.
+- **Single Design Document** -- One `design.md` replaces five separate artifacts (spec, plan, contracts, data model, tasks). Variable lists appear once, resource inventories appear once, and validation rules appear once. There is nothing to get inconsistent.
 
 - **TDD for Terraform** -- Test files are written before module code. Each test scenario in the design document maps to a `run` block with concrete assertions. Implementation is driven by making tests pass, not by following prose instructions.
 
@@ -127,7 +127,7 @@ Skills provide domain knowledge and orchestration logic, loaded into agent conte
 
 | Skill | Purpose |
 |-------|---------|
-| `tf-plan-v2` | Full 4-phase workflow entry point: Understand, Design, Build+Test, Validate |
+| `tf-plan` | Full 4-phase workflow entry point: Understand, Design, Build+Test, Validate |
 | `tf-implement` | TDD-aware implementation: write tests first, run after each phase |
 | `tf-e2e-tester` | Automated E2E test harness: runs full workflow cycle with test defaults |
 
@@ -168,7 +168,7 @@ tests/
 
 ## Contributing
 
-Follow the constitution at `.foundations/memory/constitution.md`. Use `/tf-plan-v2` for new modules. All agents and skills follow the conventions documented in `AGENTS.md`.
+Follow the constitution at `.foundations/memory/constitution.md`. Use `/tf-plan` for new modules. All agents and skills follow the conventions documented in `AGENTS.md`.
 
 When adding new agents or skills:
 - Agent definitions go in `.claude/agents/` as Markdown files

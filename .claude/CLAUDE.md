@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Context
 
-This repository is a **Terraform module development template** using **SDD v2** (Spec-Driven Development, 4-phase workflow). The goal is to author enterprise-ready, reusable Terraform modules — not to consume modules from a registry. Modules are written using raw resources with secure defaults, tested with `terraform test` in a TDD workflow, and published to a private registry.
+This repository is a **Terraform module development template** using **SDD** (Spec-Driven Development, 4-phase workflow). The goal is to author enterprise-ready, reusable Terraform modules — not to consume modules from a registry. Modules are written using raw resources with secure defaults, tested with `terraform test` in a TDD workflow, and published to a private registry.
 
 ## Primary Reference
 
@@ -22,7 +22,7 @@ Non-negotiable rules for all code generation live in the constitution. Read it b
 
 | Command | Purpose |
 |---------|---------|
-| `/tf-plan-v2` | Full 4-phase workflow: Clarify, Design, Implement (TDD), Validate |
+| `/tf-plan` | Full 4-phase workflow: Clarify, Design, Implement (TDD), Validate |
 | `/tf-implement` | Implementation only — starts from an existing `design.md` |
 
 ## Design Template
@@ -31,7 +31,7 @@ When creating design documents, use the canonical template at `.foundations/temp
 
 ## Key Conventions
 
-- Workflow conventions are defined in the orchestrator skills (`tf-plan-v2`, `tf-implement`). Follow AGENTS.md `## Context Management` for subagent rules.
+- Workflow conventions are defined in the orchestrator skills (`tf-plan`, `tf-implement`). Follow AGENTS.md `## Context Management` for subagent rules.
 - Key scripts: `validate-env.sh` (environment checks), `post-issue-progress.sh` (GitHub updates), `checkpoint-commit.sh` (git automation) — all in `.foundations/scripts/bash/`.
 
 ## Additional Component-Specific Guidance

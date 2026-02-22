@@ -1,6 +1,6 @@
-# SDD v2 System Design Principles
+# SDD System Design Principles
 
-**Scope**: Rules for building the v2 workflow system — agents, skills, orchestrator, templates, and repo structure. This governs the developer creating the tooling, not the user running it.
+**Scope**: Rules for building the workflow system — agents, skills, orchestrator, templates, and repo structure. This governs the developer creating the tooling, not the user running it.
 
 **Authority**: If a design choice during development conflicts with a principle here, the principle wins. No exceptions without removing the principle first.
 
@@ -12,7 +12,7 @@ The entire planning phase produces one file: `specs/{FEATURE}/design.md`.
 
 - Do not build agents that produce separate specification, plan, contract, data model, or task files.
 - Do not build templates with sections that restate information from other sections. Every variable name, resource entry, validation rule, and output appears in exactly one table.
-- Do not build a consistency analysis agent or skill. It exists in v1 only because multiple artifacts can contradict each other. One file cannot contradict itself.
+- Do not build a consistency analysis agent or skill. Multiple artifacts can contradict each other. One file cannot contradict itself.
 - Do not build a remediation cycle. There is nothing to remediate.
 
 **Test**: If you can grep `design.md` for a variable name and get more than one row across all tables, the template is wrong.
@@ -39,7 +39,7 @@ Do not build a separate security review agent or phase.
 - Build the design agent to include security research (MCP calls to AWS docs, CIS benchmarks, provider security attributes) as part of its own execution.
 - Build the design.md template with a mandatory Security Controls table. This table is the security specification — no separate review document feeds into it.
 - Build each security control row to require a mapping to at least one test assertion. The orchestrator validates this mapping before approving the design.
-- Build the Phase 1 clarification step to always include a security-defaults question. This is not optional. The v1 CRITICAL finding (hardcoded vs. configurable public access) came from skipping this question.
+- Build the Phase 1 clarification step to always include a security-defaults question. This is not optional. Skipping this question has caused critical findings (hardcoded vs. configurable public access).
 
 **Test**: Search the entire repo for an agent or skill file containing "security-review" or "security-advisor" as a standalone phase. Finding one means the system violates this principle.
 
@@ -50,7 +50,7 @@ Do not build a separate security review agent or phase.
 Do not build research agents that write output to disk.
 
 - Build the orchestrator to run MCP research (provider docs, AWS docs, registry patterns) during Phase 1 and pass results directly to the design agent as input context.
-- Do not create a `research/` directory, `research-*.md` files, or any intermediate research artifacts. Persisted research files caused terminology drift in v1 — variable names in research files diverged from variable names in the spec.
+- Do not create a `research/` directory, `research-*.md` files, or any intermediate research artifacts. Persisted research files cause terminology drift — variable names in research files diverge from variable names in the spec.
 - Build the design.md template to capture research outcomes as citations in the Architectural Decisions section. The citation (provider doc version, AWS URL) is the audit trail.
 
 **Test**: After a complete workflow run, `ls specs/{FEATURE}/` should contain exactly one file: `design.md`. Nothing else.
